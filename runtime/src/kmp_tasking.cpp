@@ -1179,6 +1179,22 @@ __kmpc_omp_task_alloc( ident_t *loc_ref, kmp_int32 gtid, kmp_int32 flags,
                   sizeof_kmp_task_t, sizeof_shareds, task_entry) );
 #endif
 
+    // PVL: Notify tool about start of task creation
+#if OMPT_SUPPORT
+    kmp_info_t *thread = __kmp_threads[ gtid ];
+    kmp_taskdata_t *parent_task = thread->th.th_current_task;
+    if (ompt_enabled) {
+        if (ompt_callbacks.ompt_callback(pvl_callback_task_create_begin)) {
+            ompt_callbacks.ompt_callback(pvl_callback_task_create_begin)(
+                parent_task ? &(parent_task->ompt_task_info.task_data) : NULL,
+                parent_task ? &(parent_task->ompt_task_info.frame) : NULL,
+                ompt_task_explicit
+            );
+        }
+    }
+#endif
+
+    // PVL: Taskdata and task structures do not exist before this point
     retval = __kmp_task_alloc( loc_ref, gtid, input_flags, sizeof_kmp_task_t,
                                sizeof_shareds, task_entry );
 

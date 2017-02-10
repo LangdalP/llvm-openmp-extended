@@ -105,6 +105,12 @@
 
 #define ompt_callback_flush_implemented                 ompt_event_MAY_ALWAYS_TRACE
 
+// Start of PVLangdal extensions
+
+#define pvl_callback_task_create_begin_implemented     ompt_event_MAY_ALWAYS
+
+// End of PVLangdal extensions
+
 #if OMP_40_ENABLED
 # define ompt_callback_task_dependences_implemented      ompt_event_MAY_ALWAYS_TRACE
 # define ompt_callback_task_dependence_implemented       ompt_event_MAY_ALWAYS_TRACE

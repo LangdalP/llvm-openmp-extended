@@ -137,7 +137,8 @@
                                                                                                                 \
     macro (ompt_callback_lock_init,             ompt_callback_lock_init_t,     74) /* lock init */              \
     macro (ompt_callback_lock_destroy,          ompt_callback_lock_destroy_t,  75) /* lock destroy */           \
-    macro (ompt_callback_nest_lock,             ompt_callback_nest_lock_t,     76) /* nest lock */
+    macro (ompt_callback_nest_lock,             ompt_callback_nest_lock_t,     76) /* nest lock */              \
+    macro (pvl_callback_task_create_begin,      pvl_callback_task_create_begin_t, 80) /* end of task creation */
 
 
 
@@ -353,6 +354,13 @@ typedef void (*ompt_callback_task_create_t) (
     ompt_task_type_t type,
     int has_dependences,
     const void *codeptr_ra
+);
+
+// PVL: Custom type
+typedef void (*pvl_callback_task_create_begin_t) (
+    ompt_data_t *parent_task_data,
+    const ompt_frame_t *parent_frame,
+    ompt_task_type_t type
 );
 
 /* task dependences */
