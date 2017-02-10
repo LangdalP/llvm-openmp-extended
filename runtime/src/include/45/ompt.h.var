@@ -130,7 +130,9 @@
                                                                                                                 \
     /*--- Old Events --- */                                                                                     \
     macro (ompt_event_control,                  ompt_control_callback_t,       29) /* support control calls */  \
-
+                                                                                                                \
+    /*--- Custom Events (part of extensions to generate grain graphs ---*/                                      \
+    macro (ext_callback_task_create_begin,      ext_callback_task_create_begin_t, 80) /* end of task creation */\
 
 
 
@@ -354,6 +356,13 @@ typedef void (*ompt_callback_task_create_t) (
     ompt_task_type_t type,
     int has_dependences,
     const void *codeptr_ra
+);
+
+/* PVL: custom type */
+typedef void (*ext_callback_task_create_begin_t) (
+    ompt_data_t *parent_task_data,
+    const ompt_frame_t *parent_frame,
+    ompt_task_type_t type
 );
 
 /* task dependences */

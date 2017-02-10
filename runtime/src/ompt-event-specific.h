@@ -84,6 +84,12 @@
 
 #define ompt_callback_cancel_implemented                ompt_event_MAY_ALWAYS_OPTIONAL
 
+// Start of PVLangdal extensions
+
+#define ext_callback_task_create_begin_implemented      ompt_event_MAY_ALWAYS
+
+// End of PVLangdal extensions
+
 #if OMP_40_ENABLED
 # define ompt_callback_task_dependences_implemented      ompt_event_MAY_ALWAYS_OPTIONAL
 # define ompt_callback_task_dependence_implemented       ompt_event_MAY_ALWAYS_OPTIONAL
