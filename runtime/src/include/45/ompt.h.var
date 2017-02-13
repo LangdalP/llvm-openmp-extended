@@ -133,7 +133,7 @@
                                                                                                                 \
                                                                                                                 \
     /*--- Custom Events (part of extensions to generate grain graphs ---*/                                      \
-    macro (pvl_callback_task_create_begin,      pvl_callback_task_create_begin_t, 80) /* end of task creation */\
+    macro (ext_callback_task_create_begin,      ext_callback_task_create_begin_t, 80) /* end of task creation */\
 
 
 
@@ -353,7 +353,7 @@ typedef void (*ompt_callback_task_create_t) (
 );
 
 /* PVL: custom type */
-typedef void (*pvl_callback_task_create_begin_t) (
+typedef void (*ext_callback_task_create_begin_t) (
     ompt_data_t *parent_task_data,
     const ompt_frame_t *parent_frame,
     ompt_task_type_t type

@@ -1186,8 +1186,8 @@ __kmpc_omp_task_alloc( ident_t *loc_ref, kmp_int32 gtid, kmp_int32 flags,
     kmp_info_t *thread = __kmp_threads[ gtid ];
     kmp_taskdata_t *parent_task = thread->th.th_current_task;
     if (ompt_enabled) {
-        if (ompt_callbacks.ompt_callback(pvl_callback_task_create_begin)) {
-            ompt_callbacks.ompt_callback(pvl_callback_task_create_begin)(
+        if (ompt_callbacks.ompt_callback(ext_callback_task_create_begin)) {
+            ompt_callbacks.ompt_callback(ext_callback_task_create_begin)(
                 parent_task ? &(parent_task->ompt_task_info.task_data) : NULL,
                 parent_task ? &(parent_task->ompt_task_info.frame) : NULL,
                 ompt_task_explicit
