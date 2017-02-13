@@ -3,6 +3,7 @@
 // REQUIRES: ompt
 #include "callback.h"
 #include <omp.h>
+#include <unistd.h>
 
 int main()
 {
@@ -15,6 +16,10 @@ int main()
     print_ids(0);
     print_ids(1);
     print_frame(0);
+
+    //get all implicit task events before starting nested:
+    #pragma omp barrier
+    
     #pragma omp parallel num_threads(4)
     {
       print_frame(1);
@@ -22,14 +27,27 @@ int main()
       print_ids(1);
       print_ids(2);
       print_frame(0);
+      sleep(1);
       #pragma omp barrier
       print_ids(0);
     }
     print_ids(0);
   }
 
+
+  // Check if libomp supports the callbacks for this test.
+  // CHECK-NOT: {{^}}0: Could not register callback 'ompt_callback_parallel_begin'
+  // CHECK-NOT: {{^}}0: Could not register callback 'ompt_callback_parallel_end'
+  // CHECK-NOT: {{^}}0: Could not register callback 'ompt_event_implicit_task_begin'
+  // CHECK-NOT: {{^}}0: Could not register callback 'ompt_event_implicit_task_end'
+  // CHECK-NOT: {{^}}0: Could not register callback 'ompt_event_barrier_begin'
+  // CHECK-NOT: {{^}}0: Could not register callback 'ompt_event_barrier_end'
+  // CHECK-NOT: {{^}}0: Could not register callback 'ompt_event_wait_barrier_begin'
+  // CHECK-NOT: {{^}}0: Could not register callback 'ompt_event_wait_barrier_end'
+
+
   // CHECK: 0: NULL_POINTER=[[NULL:.*$]]
-  // CHECK: {{^}}[[MASTER_ID:[0-9]+]]: ompt_event_parallel_begin: parent_task_id=[[PARENT_TASK_ID:[0-9]+]], parent_task_frame.exit=[[NULL]], parent_task_frame.reenter={{0x[0-f]+}}, parallel_id=[[PARALLEL_ID:[0-9]+]], requested_team_size=4, parallel_function=0x{{[0-f]+}}, invoker=[[PARALLEL_INVOKER:.+]]
+  // CHECK: {{^}}[[MASTER_ID:[0-9]+]]: ompt_event_parallel_begin: parent_task_id=[[PARENT_TASK_ID:[0-9]+]], parent_task_frame.exit=[[NULL]], parent_task_frame.reenter={{0x[0-f]+}}, parallel_id=[[PARALLEL_ID:[0-9]+]], requested_team_size=4, parallel_function=0x{{[0-f]+}}, invoker=[[PARALLEL_INVOKER:[0-9]+]]
 
   // CHECK-DAG: {{^}}[[MASTER_ID]]: ompt_event_implicit_task_begin: parallel_id=[[PARALLEL_ID]], task_id=[[IMPLICIT_TASK_ID:[0-9]+]]
   // CHECK-DAG: {{^}}[[MASTER_ID]]: ompt_event_implicit_task_end: parallel_id=[[PARALLEL_ID]], task_id=[[IMPLICIT_TASK_ID]]
@@ -50,7 +68,7 @@ int main()
 
   // THREADS: {{^}}0: NULL_POINTER=[[NULL:.*$]]
   // THREADS: {{^}}[[MASTER_ID:[0-9]+]]: __builtin_frame_address(0)=[[MAIN_REENTER:0x[0-f]+]]
-  // THREADS: {{^}}[[MASTER_ID]]: ompt_event_parallel_begin: parent_task_id=[[PARENT_TASK_ID:[0-9]+]], parent_task_frame.exit=[[NULL]], parent_task_frame.reenter=[[MAIN_REENTER]], parallel_id=[[PARALLEL_ID:[0-9]+]], requested_team_size=4, parallel_function=0x{{[0-f]+}}, invoker=[[PARALLEL_INVOKER:.+]]
+  // THREADS: {{^}}[[MASTER_ID]]: ompt_event_parallel_begin: parent_task_id=[[PARENT_TASK_ID:[0-9]+]], parent_task_frame.exit=[[NULL]], parent_task_frame.reenter=[[MAIN_REENTER]], parallel_id=[[PARALLEL_ID:[0-9]+]], requested_team_size=4, parallel_function=0x{{[0-f]+}}, invoker=[[PARALLEL_INVOKER:[0-9]+]]
 
   // nested parallel masters
   // THREADS: {{^}}[[MASTER_ID]]: ompt_event_implicit_task_begin: parallel_id=[[PARALLEL_ID]], task_id=[[IMPLICIT_TASK_ID:[0-9]+]]
