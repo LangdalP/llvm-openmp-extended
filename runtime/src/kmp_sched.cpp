@@ -384,6 +384,20 @@ __kmp_for_static_init(
     }
 #endif
 
+    // PVL: Inserting test call to ext_callback_chunk_schedule here
+#if OMPT_SUPPORT && OMPT_OPTIONAL
+    if (ompt_enabled &&
+        ompt_callbacks.ompt_callback(ext_callback_chunk_schedule)) {
+        ompt_callbacks.ompt_callback(ext_callback_chunk_schedule)(
+            &(team_info->parallel_data),
+            &(task_info->task_data),
+            *plower,
+            *pupper,
+            incr,
+            0);
+    }
+#endif
+
     return;
 }
 

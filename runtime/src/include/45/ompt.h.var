@@ -133,6 +133,7 @@
                                                                                                                 \
     /*--- Custom Events (part of extensions to generate grain graphs ---*/                                      \
     macro (ext_callback_task_create_begin,      ext_callback_task_create_begin_t, 80) /* end of task creation */\
+    macro (ext_callback_chunk_schedule,         ext_callback_chunk_schedule_t,    81) /* end of task creation */\
 
 
 
@@ -456,6 +457,16 @@ typedef void (*ompt_callback_work_t) (
     ompt_data_t *task_data,
     uint64_t count,
     const void *codeptr_ra
+);
+
+/* PVL: custom type */
+typedef void (*ext_callback_chunk_schedule_t) (
+    ompt_data_t *parallel_data,
+    ompt_data_t *task_data,
+    uint64_t iter_start,
+    uint64_t iter_end,
+    uint64_t iter_step,
+    int last_chunk
 );
 
 typedef enum ompt_sync_region_kind_e {
