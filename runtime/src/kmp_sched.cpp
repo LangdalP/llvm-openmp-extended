@@ -72,6 +72,9 @@ __kmp_for_static_init(
 #if OMPT_SUPPORT && OMPT_OPTIONAL
     ompt_team_info_t *team_info = NULL;
     ompt_task_info_t *task_info = NULL;
+    // TODO: (PVL) Improve
+    T lower = *plower;
+    T upper = *pupper;
 
     if (ompt_enabled) {
         // Only fully initialize variables needed by OMPT if OMPT is enabled.
@@ -385,16 +388,20 @@ __kmp_for_static_init(
 #endif
 
     // PVL: Inserting test call to ext_callback_chunk_schedule here
+    // TODO: Place callback in all relevant execution paths
 #if OMPT_SUPPORT && OMPT_OPTIONAL
     if (ompt_enabled &&
-        ompt_callbacks.ompt_callback(ext_callback_chunk_schedule)) {
-        ompt_callbacks.ompt_callback(ext_callback_chunk_schedule)(
+        ompt_callbacks.ompt_callback(ext_callback_loop)) {
+        ompt_callbacks.ompt_callback(ext_callback_loop)(
+            ext_loop_sched_static,
+            ompt_scope_begin,
             &(team_info->parallel_data),
             &(task_info->task_data),
-            *plower,
-            *pupper,
+            lower, // TODO: Calculate global lower
+            upper, // TODO: Calculate global upper
             incr,
-            0);
+            chunk,    // Chunk size
+            team_info->microtask);
     }
 #endif
 

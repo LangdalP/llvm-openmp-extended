@@ -1239,6 +1239,25 @@ __kmp_dispatch_init(
             team_info->microtask);
     }
 #endif
+
+    // PVL: Custom callback
+#if OMPT_SUPPORT && OMPT_OPTIONAL
+    if (ompt_enabled &&
+        ompt_callbacks.ompt_callback(ext_callback_loop)) {
+        ompt_team_info_t *team_info = __ompt_get_teaminfo(0, NULL);
+        ompt_task_info_t *task_info = __ompt_get_task_info_object(0);
+        ompt_callbacks.ompt_callback(ext_callback_loop)(
+            ext_loop_sched_dynamic, // TODO: Improve
+            ompt_scope_begin,
+            &(team_info->parallel_data),
+            &(task_info->task_data),
+            lb,
+            ub,
+            st,
+            chunk,    // Chunk size
+            team_info->microtask);
+    }
+#endif
 }
 
 /*
