@@ -2293,6 +2293,19 @@ __kmp_dispatch_next(
 #if INCLUDE_SSC_MARKS
     SSC_MARK_DISPATCH_NEXT();
 #endif
+
+#if OMPT_SUPPORT && OMPT_OPTIONAL
+    if (ompt_enabled &&
+        ompt_callbacks.ompt_callback(ext_callback_chunk_schedule)) {
+        ompt_task_info_t *task_info = __ompt_get_task_info_object(0);
+        ompt_callbacks.ompt_callback(ext_callback_chunk_schedule)(
+            &(task_info->task_data),
+            *p_lb,  // chunk lb
+            *p_ub,  // chunk ub
+            !status); // last chunk?
+    }
+#endif
+
     OMPT_LOOP_END;
     return status;
 }
