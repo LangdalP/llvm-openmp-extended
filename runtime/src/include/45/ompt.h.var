@@ -477,6 +477,7 @@ typedef void (*ext_callback_loop_t) (
     uint64_t upper,                 // Upper iteration bound
     uint64_t step,                  // Increment
     uint64_t chunk_size,            // Chunk size
+    uint64_t thread_lower,          // Lower iter. bound for thread
     const void * codeptr_ra
 );
 
