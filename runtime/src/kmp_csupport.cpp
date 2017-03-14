@@ -1693,10 +1693,12 @@ __kmpc_for_static_fini( ident_t *loc, kmp_int32 global_tid )
             ompt_scope_end,
             &(team_info->parallel_data),
             &(task_info->task_data),
+#ifndef OMPT_STATIC_CHUNKS
             0,
             0,
             0,
             0,
+#endif
             0,
             OMPT_GET_RETURN_ADDRESS(1));
     }
