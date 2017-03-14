@@ -1563,9 +1563,9 @@ __kmp_dispatch_next(
         // PVL: Added chunk scheduling callback invocation
 #if OMPT_SUPPORT && OMPT_OPTIONAL
         if (ompt_enabled &&
-            ompt_callbacks.ompt_callback(ext_callback_chunk_schedule)) {
+            ompt_callbacks.ompt_callback(ext_callback_chunk)) {
             ompt_task_info_t *task_info = __ompt_get_task_info_object(0);
-            ompt_callbacks.ompt_callback(ext_callback_chunk_schedule)(
+            ompt_callbacks.ompt_callback(ext_callback_chunk)(
                 &(task_info->task_data),
                 (int64_t)*p_lb,  // chunk lb
                 (int64_t)*p_ub,  // chunk ub
@@ -2296,9 +2296,9 @@ __kmp_dispatch_next(
     // PVL: Added chunk scheduling callback invocation
 #if OMPT_SUPPORT && OMPT_OPTIONAL
     if (ompt_enabled &&
-        ompt_callbacks.ompt_callback(ext_callback_chunk_schedule)) {
+        ompt_callbacks.ompt_callback(ext_callback_chunk)) {
         ompt_task_info_t *task_info = __ompt_get_task_info_object(0);
-        ompt_callbacks.ompt_callback(ext_callback_chunk_schedule)(
+        ompt_callbacks.ompt_callback(ext_callback_chunk)(
             &(task_info->task_data),
             (int64_t)*p_lb,  // chunk lb
             (int64_t)*p_ub,  // chunk ub

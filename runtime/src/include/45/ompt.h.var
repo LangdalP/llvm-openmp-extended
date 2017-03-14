@@ -134,7 +134,7 @@
     /*--- Custom Events (part of extensions to generate grain graphs ---*/                                      \
     macro (ext_callback_task_create_begin,      ext_callback_task_create_begin_t, 80) /* end of task creation */\
     macro (ext_callback_loop,                   ext_callback_loop_t,              81) /* loop construct */      \
-    macro (ext_callback_chunk_schedule,         ext_callback_chunk_schedule_t,    82) /* chunk is scheduled */  \
+    macro (ext_callback_chunk,         ext_callback_chunk_t,    82) /* chunk is scheduled */  \
 
 
 
@@ -482,10 +482,10 @@ typedef void (*ext_callback_loop_t) (
 );
 
 /* PVL: custom type */
-typedef void (*ext_callback_chunk_schedule_t) (
+typedef void (*ext_callback_chunk_t) (
     ompt_data_t *task_data,
-    uint64_t chunk_lower,
-    uint64_t chunk_upper,
+    int64_t lower,
+    int64_t upper,
     int last_chunk // Is scheduled chunk last for thread?
 );
 
