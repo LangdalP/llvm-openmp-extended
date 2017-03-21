@@ -468,18 +468,29 @@ typedef enum ext_loop_sched_e {
 } ext_loop_sched_t;
 
 /* PVL: custom type */
+#ifndef OMPT_STATIC_CHUNKS
 typedef void (*ext_callback_loop_t) (
     ext_loop_sched_t loop_sched,
     ompt_scope_endpoint_t endpoint,
     ompt_data_t * parallel_data,    // The parallel region
     ompt_data_t * task_data,        // The implicit task of the worker
-    uint64_t lower,                 // Lower iteration bound
-    uint64_t upper,                 // Upper iteration bound
-    uint64_t step,                  // Increment
+    int64_t lower,                 // Lower iteration bound
+    int64_t upper,                 // Upper iteration bound
+    int64_t step,                  // Increment
     uint64_t chunk_size,            // Chunk size
-    uint64_t thread_lower,          // Lower iter. bound for thread
+    int64_t thread_lower,          // Lower iter. bound for thread
     const void * codeptr_ra
 );
+#else // OMPT_STATIC_CHUNKS is defined
+typedef void (*ext_callback_loop_t) (
+    ext_loop_sched_t loop_sched,
+    ompt_scope_endpoint_t endpoint,
+    ompt_data_t * parallel_data,    // The parallel region
+    ompt_data_t * task_data,        // The implicit task of the worker
+    int64_t step,                   // Increment
+    const void * codeptr_ra
+);
+#endif // OMPT_STATIC_CHUNKS
 
 /* PVL: custom type */
 typedef void (*ext_callback_chunk_t) (

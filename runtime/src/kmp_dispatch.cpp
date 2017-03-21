@@ -1234,11 +1234,15 @@ __kmp_dispatch_init(
             ompt_scope_begin,
             &(team_info->parallel_data),
             &(task_info->task_data),
+#ifndef OMPT_STATIC_CHUNKS
             lb,
             ub,
+#endif
             st,
-            chunk,    // Chunk size
+#ifndef OMPT_STATIC_CHUNKS
+            (uint64_t)chunk,    // Chunk size
             0,        // Thread lower
+#endif
             team_info->microtask);
     }
 #endif
@@ -1396,6 +1400,7 @@ __kmp_dispatch_finish_chunk( int gtid, ident_t *loc )
  * (no more work), then tell OMPT the loop is over. In some cases
  * kmp_dispatch_fini() is not called. */
 #if OMPT_SUPPORT && OMPT_OPTIONAL
+#ifndef OMPT_STATIC_CHUNKS
 #define OMPT_LOOP_END                                                       \
     if (status == 0) {                                                      \
         if (ompt_enabled &&                                                 \
@@ -1415,7 +1420,24 @@ __kmp_dispatch_finish_chunk( int gtid, ident_t *loc )
                 team_info->microtask);                                      \
         }                                                                   \
     }
-#else
+#else // OMPT_STATIC_CHUNKS is defined
+#define OMPT_LOOP_END                                                       \
+    if (status == 0) {                                                      \
+        if (ompt_enabled &&                                                 \
+            ompt_callbacks.ompt_callback(ext_callback_loop)) {              \
+            ompt_team_info_t *team_info = __ompt_get_teaminfo(0, NULL);     \
+            ompt_task_info_t *task_info = __ompt_get_task_info_object(0);   \
+            ompt_callbacks.ompt_callback(ext_callback_loop)(                \
+                ext_loop_sched_dynamic,                                     \
+                ompt_scope_end,                                             \
+                &(team_info->parallel_data),                                \
+                &(task_info->task_data),                                    \
+                0,                                                          \
+                team_info->microtask);                                      \
+        }                                                                   \
+    }
+#endif // OMPT_STATIC_CHUNKS
+#else // OMPT_SUPPORT && OMPT_OPTIONAL is not true
 #define OMPT_LOOP_END // no-op
 #endif
 
