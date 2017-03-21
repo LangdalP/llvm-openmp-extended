@@ -72,6 +72,9 @@ __kmp_for_static_init(
 #if OMPT_SUPPORT && OMPT_OPTIONAL
     ompt_team_info_t *team_info = NULL;
     ompt_task_info_t *task_info = NULL;
+    // TODO: (PVL) Improve
+    T lower = *plower;
+    T upper = *pupper;
 
     if (ompt_enabled) {
         // Only fully initialize variables needed by OMPT if OMPT is enabled.
@@ -125,15 +128,20 @@ __kmp_for_static_init(
         KE_TRACE( 10, ("__kmpc_for_static_init: T#%d return\n", global_tid ) );
 
 //TODO for intel: need to be able to distinguish between sections and loops for ompt callback
+        // PVL: Replaced ompt_callback_work with ext_callback_loop
 #if OMPT_SUPPORT && OMPT_OPTIONAL
         if (ompt_enabled &&
-            ompt_callbacks.ompt_callback(ompt_callback_work)) {
-            ompt_callbacks.ompt_callback(ompt_callback_work)(
-                ompt_work_loop,
+            ompt_callbacks.ompt_callback(ext_callback_loop)) {
+            ompt_callbacks.ompt_callback(ext_callback_loop)(
+                ext_loop_sched_static,
                 ompt_scope_begin,
                 &(team_info->parallel_data),
                 &(task_info->task_data),
-                0,  //TODO: OMPT: verify loop count value (OpenMP-spec 4.6.2.18)
+                lower,
+                upper,
+                incr,
+                (*pupper - *plower + 1),    // Chunk size
+                *plower,        // Thread. lower
                 team_info->microtask);
         }
 #endif
@@ -179,15 +187,20 @@ __kmp_for_static_init(
         KE_TRACE( 10, ("__kmpc_for_static_init: T#%d return\n", global_tid ) );
 
 //TODO for intel: (see first ompt callback in this function)
+        // PVL: Replaced ompt_callback_work with ext_callback_loop
 #if OMPT_SUPPORT && OMPT_OPTIONAL
         if (ompt_enabled &&
-            ompt_callbacks.ompt_callback(ompt_callback_work)) {
-            ompt_callbacks.ompt_callback(ompt_callback_work)(
-                ompt_work_loop,
+            ompt_callbacks.ompt_callback(ext_callback_loop)) {
+            ompt_callbacks.ompt_callback(ext_callback_loop)(
+                ext_loop_sched_static,
                 ompt_scope_begin,
                 &(team_info->parallel_data),
                 &(task_info->task_data),
-                *pstride, //TODO: OMPT: verify loop count value (OpenMP-spec 4.6.2.18)
+                lower,
+                upper,
+                incr,
+                (*pupper - *plower + 1),    // Chunk size
+                *plower,        // Thread. lower
                 team_info->microtask);
         }
 #endif
@@ -212,15 +225,20 @@ __kmp_for_static_init(
         KE_TRACE( 10, ("__kmpc_for_static_init: T#%d return\n", global_tid ) );
 
 //TODO for intel: (see first ompt callback in this function)
+        // PVL: Replaced ompt_callback_work with ext_callback_loop
 #if OMPT_SUPPORT && OMPT_OPTIONAL
         if (ompt_enabled &&
-            ompt_callbacks.ompt_callback(ompt_callback_work)) {
-            ompt_callbacks.ompt_callback(ompt_callback_work)(
-                ompt_work_loop,
+            ompt_callbacks.ompt_callback(ext_callback_loop)) {
+            ompt_callbacks.ompt_callback(ext_callback_loop)(
+                ext_loop_sched_static,
                 ompt_scope_begin,
                 &(team_info->parallel_data),
                 &(task_info->task_data),
-                *pstride,  //TODO: OMPT: verify loop count value (OpenMP-spec 4.6.2.18)
+                lower,
+                upper,
+                incr,
+                (*pupper - *plower + 1),    // Chunk size
+                *plower,        // Thread. lower
                 team_info->microtask);
         }
 #endif
@@ -370,16 +388,20 @@ __kmp_for_static_init(
     #endif
     KE_TRACE( 10, ("__kmpc_for_static_init: T#%d return\n", global_tid ) );
 
-//TODO for intel: (see first ompt callback in this function)
+    // PVL: Replaced ompt_callback_work with ext_callback_loop
 #if OMPT_SUPPORT && OMPT_OPTIONAL
     if (ompt_enabled &&
-        ompt_callbacks.ompt_callback(ompt_callback_work)) {
-        ompt_callbacks.ompt_callback(ompt_callback_work)(
-            ompt_work_loop,
+        ompt_callbacks.ompt_callback(ext_callback_loop)) {
+        ompt_callbacks.ompt_callback(ext_callback_loop)(
+            ext_loop_sched_static,
             ompt_scope_begin,
             &(team_info->parallel_data),
             &(task_info->task_data),
-            trip_count, //TODO: OMPT: verify loop count value (OpenMP-spec 4.6.2.18; email discussion on count value semantics)
+            lower,
+            upper,
+            incr,
+            (*pupper - *plower + 1),    // Chunk size
+            *plower,        // Thread. lower
             team_info->microtask);
     }
 #endif

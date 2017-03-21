@@ -1223,19 +1223,22 @@ __kmp_dispatch_init(
       }
     #endif // ( KMP_STATIC_STEAL_ENABLED )
 
-
-//TODO for intel: need to be able to distinguish between sections and loops for ompt callback
+    // PVL: Custom callback
 #if OMPT_SUPPORT && OMPT_OPTIONAL
     if (ompt_enabled &&
-        ompt_callbacks.ompt_callback(ompt_callback_work)) {
+        ompt_callbacks.ompt_callback(ext_callback_loop)) {
         ompt_team_info_t *team_info = __ompt_get_teaminfo(0, NULL);
         ompt_task_info_t *task_info = __ompt_get_task_info_object(0);
-        ompt_callbacks.ompt_callback(ompt_callback_work)(
-            ompt_work_loop,
+        ompt_callbacks.ompt_callback(ext_callback_loop)(
+            ext_loop_sched_dynamic, // TODO: Improve
             ompt_scope_begin,
             &(team_info->parallel_data),
             &(task_info->task_data),
-            tc, //TODO: OMPT: verify loop count value (OpenMP-spec 4.6.2.18)
+            lb,
+            ub,
+            st,
+            chunk,    // Chunk size
+            0,        // Thread lower
             team_info->microtask);
     }
 #endif
@@ -1393,22 +1396,25 @@ __kmp_dispatch_finish_chunk( int gtid, ident_t *loc )
  * (no more work), then tell OMPT the loop is over. In some cases
  * kmp_dispatch_fini() is not called. */
 #if OMPT_SUPPORT && OMPT_OPTIONAL
-#define OMPT_LOOP_END                                                          \
-    if (status == 0) {                                                         \
-        if (ompt_enabled &&                     \
-            ompt_callbacks.ompt_callback(ompt_callback_work)) {                \
-            ompt_team_info_t *team_info = __ompt_get_teaminfo(0, NULL);        \
-            ompt_task_info_t *task_info = __ompt_get_task_info_object(0);              \
-            ompt_callbacks.ompt_callback(ompt_callback_work)(                  \
-                ompt_work_loop,                                                \
-                ompt_scope_end,                                                \
-                &(team_info->parallel_data),                                   \
-                &(task_info->task_data),                                       \
-                0,                                                             \
-                OMPT_GET_RETURN_ADDRESS(0));                                   \
-        }                                                                      \
+#define OMPT_LOOP_END                                                       \
+    if (status == 0) {                                                      \
+        if (ompt_enabled &&                                                 \
+            ompt_callbacks.ompt_callback(ext_callback_loop)) {              \
+            ompt_team_info_t *team_info = __ompt_get_teaminfo(0, NULL);     \
+            ompt_task_info_t *task_info = __ompt_get_task_info_object(0);   \
+            ompt_callbacks.ompt_callback(ext_callback_loop)(                \
+                ext_loop_sched_dynamic,                                     \
+                ompt_scope_end,                                             \
+                &(team_info->parallel_data),                                \
+                &(task_info->task_data),                                    \
+                0,                                                          \
+                0,                                                          \
+                0,                                                          \
+                0,                                                          \
+                0,                                                          \
+                team_info->microtask);                                      \
+        }                                                                   \
     }
-        //TODO: implement count
 #else
 #define OMPT_LOOP_END // no-op
 #endif
@@ -1553,6 +1559,18 @@ __kmp_dispatch_next(
         #endif
 #if INCLUDE_SSC_MARKS
         SSC_MARK_DISPATCH_NEXT();
+#endif
+        // PVL: Added chunk scheduling callback invocation
+#if OMPT_SUPPORT && OMPT_OPTIONAL
+        if (ompt_enabled &&
+            ompt_callbacks.ompt_callback(ext_callback_chunk)) {
+            ompt_task_info_t *task_info = __ompt_get_task_info_object(0);
+            ompt_callbacks.ompt_callback(ext_callback_chunk)(
+                &(task_info->task_data),
+                (int64_t)*p_lb,  // chunk lb
+                (int64_t)*p_ub,  // chunk ub
+                !status); // last chunk?
+        }
 #endif
         OMPT_LOOP_END;
         return status;
@@ -2274,6 +2292,20 @@ __kmp_dispatch_next(
 #if INCLUDE_SSC_MARKS
     SSC_MARK_DISPATCH_NEXT();
 #endif
+
+    // PVL: Added chunk scheduling callback invocation
+#if OMPT_SUPPORT && OMPT_OPTIONAL
+    if (ompt_enabled &&
+        ompt_callbacks.ompt_callback(ext_callback_chunk)) {
+        ompt_task_info_t *task_info = __ompt_get_task_info_object(0);
+        ompt_callbacks.ompt_callback(ext_callback_chunk)(
+            &(task_info->task_data),
+            (int64_t)*p_lb,  // chunk lb
+            (int64_t)*p_ub,  // chunk ub
+            !status); // last chunk?
+    }
+#endif
+
     OMPT_LOOP_END;
     return status;
 }

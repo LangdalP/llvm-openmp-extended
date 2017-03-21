@@ -87,6 +87,8 @@
 // Start of PVLangdal extensions
 
 #define ext_callback_task_create_begin_implemented      ompt_event_MAY_ALWAYS
+#define ext_callback_loop_implemented                   ompt_event_MAY_ALWAYS
+#define ext_callback_chunk_implemented                  ompt_event_MAY_ALWAYS
 
 // End of PVLangdal extensions
 
