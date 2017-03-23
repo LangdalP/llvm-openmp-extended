@@ -127,6 +127,7 @@ __kmp_for_static_init(
         #endif
         KE_TRACE( 10, ("__kmpc_for_static_init: T#%d return\n", global_tid ) );
 
+        // TODO for intel: need to be able to distinguish between sections and loops for ompt callback
         // PVL: Replaced ompt_callback_work with ext_callback_loop
 #if OMPT_SUPPORT && OMPT_OPTIONAL
         if (ompt_enabled &&
@@ -189,7 +190,7 @@ __kmp_for_static_init(
         #endif
         KE_TRACE( 10, ("__kmpc_for_static_init: T#%d return\n", global_tid ) );
 
-//TODO for intel: (see first ompt callback in this function)
+        // TODO for intel: (see first ompt callback in this function)
         // PVL: Replaced ompt_callback_work with ext_callback_loop
 #if OMPT_SUPPORT && OMPT_OPTIONAL
         if (ompt_enabled &&
@@ -231,6 +232,7 @@ __kmp_for_static_init(
         #endif
         KE_TRACE( 10, ("__kmpc_for_static_init: T#%d return\n", global_tid ) );
 
+        // TODO for intel: (see first ompt callback in this function)
         // PVL: Replaced ompt_callback_work with ext_callback_loop
 #if OMPT_SUPPORT && OMPT_OPTIONAL
         if (ompt_enabled &&
@@ -398,6 +400,7 @@ __kmp_for_static_init(
     #endif
     KE_TRACE( 10, ("__kmpc_for_static_init: T#%d return\n", global_tid ) );
 
+    // TODO for intel: (see first ompt callback in this function)
     // PVL: Replaced ompt_callback_work with ext_callback_loop
 #if OMPT_SUPPORT && OMPT_OPTIONAL
     if (ompt_enabled &&
