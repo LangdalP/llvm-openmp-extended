@@ -1223,6 +1223,7 @@ __kmp_dispatch_init(
       }
     #endif // ( KMP_STATIC_STEAL_ENABLED )
 
+    // TODO for intel: need to be able to distinguish between sections and loops for ompt callback
     // PVL: Custom callback
 #if OMPT_SUPPORT && OMPT_OPTIONAL
     if (ompt_enabled &&
