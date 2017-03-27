@@ -887,6 +887,19 @@ __kmpc_for_static_init_8u( ident_t *loc, kmp_int32 gtid, kmp_int32 schedtype, km
 
 // PVL
 #ifdef OMPT_STATIC_CHUNKS
+
+kmp_int32
+__kmpc_should_callback_per_chunk( ident_t *loc )
+{
+#if OMPT_SUPPORT && OMPT_OPTIONAL
+    if (ompt_enabled &&
+        ompt_callbacks.ompt_callback(ext_callback_chunk)) {
+        return 1;
+    }
+#endif
+    return 0;
+}
+
 void
 __kmpc_for_static_chunk_4( ident_t *loc, kmp_int32 global_tid, kmp_int32 last,
                                    kmp_int32 lower, kmp_int32 upper)

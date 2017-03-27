@@ -3339,6 +3339,7 @@ KMP_EXPORT void __kmpc_for_static_fini  ( ident_t *loc, kmp_int32 global_tid );
 
 // PVL
 #ifdef OMPT_STATIC_CHUNKS
+KMP_EXPORT kmp_int32 __kmpc_should_callback_per_chunk ( ident_t * );
 KMP_EXPORT void __kmpc_for_static_chunk_4   ( ident_t *loc, kmp_int32 global_tid, kmp_int32 last, kmp_int32 lower, kmp_int32 upper);
 KMP_EXPORT void __kmpc_for_static_chunk_4u  ( ident_t *loc, kmp_int32 global_tid, kmp_int32 last, kmp_uint32 lower, kmp_uint32 upper);
 KMP_EXPORT void __kmpc_for_static_chunk_8   ( ident_t *loc, kmp_int32 global_tid, kmp_int32 last, kmp_int64 lower, kmp_int64 upper);
