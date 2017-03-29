@@ -1693,6 +1693,7 @@ __kmpc_for_static_fini( ident_t *loc, kmp_int32 global_tid )
             ompt_scope_end,
             &(team_info->parallel_data),
             &(task_info->task_data),
+            0,
 #ifndef OMPT_STATIC_CHUNKS
             0,
             0,

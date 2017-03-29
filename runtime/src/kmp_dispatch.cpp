@@ -1235,6 +1235,7 @@ __kmp_dispatch_init(
             ompt_scope_begin,
             &(team_info->parallel_data),
             &(task_info->task_data),
+            traits_t< T >::is_signed,
 #ifndef OMPT_STATIC_CHUNKS
             lb,
             ub,
@@ -1242,7 +1243,7 @@ __kmp_dispatch_init(
             st,
 #ifndef OMPT_STATIC_CHUNKS
             (uint64_t)chunk,    // Chunk size
-            0,        // Thread lower
+            0,                  // Thread lower
 #endif
             team_info->microtask);
     }
@@ -1397,6 +1398,7 @@ __kmp_dispatch_finish_chunk( int gtid, ident_t *loc )
 
 #endif /* KMP_GOMP_COMPAT */
 
+// PVL: Customized this
 /* Define a macro for exiting __kmp_dispatch_next(). If status is 0
  * (no more work), then tell OMPT the loop is over. In some cases
  * kmp_dispatch_fini() is not called. */
@@ -1418,6 +1420,7 @@ __kmp_dispatch_finish_chunk( int gtid, ident_t *loc )
                 0,                                                          \
                 0,                                                          \
                 0,                                                          \
+                0,                                                          \
                 team_info->microtask);                                      \
         }                                                                   \
     }
@@ -1434,6 +1437,7 @@ __kmp_dispatch_finish_chunk( int gtid, ident_t *loc )
                 &(team_info->parallel_data),                                \
                 &(task_info->task_data),                                    \
                 0,                                                          \
+                0,                                                          \
                 team_info->microtask);                                      \
         }                                                                   \
     }
@@ -1447,6 +1451,16 @@ static int
 __kmp_dispatch_next(
     ident_t *loc, int gtid, kmp_int32 *p_last, T *p_lb, T *p_ub, typename traits_t< T >::signed_t *p_st
 ) {
+    // PVL
+#if OMPT_SUPPORT && OMPT_OPTIONAL
+    kmp_info_t *thread = __kmp_threads[ gtid ];
+    if (ompt_enabled && ompt_callbacks.ompt_callback(ext_tool_time)) {
+        thread->th.ompt_thread_info.last_tool_time = ompt_callbacks.ompt_callback(ext_tool_time)();
+    }
+    else {
+        __kmp_elapsed(&(thread->th.ompt_thread_info.last_tool_time));
+    }
+#endif
 
     typedef typename traits_t< T >::unsigned_t  UT;
     typedef typename traits_t< T >::signed_t    ST;
@@ -1588,11 +1602,19 @@ __kmp_dispatch_next(
         if (ompt_enabled &&
             ompt_callbacks.ompt_callback(ext_callback_chunk)) {
             ompt_task_info_t *task_info = __ompt_get_task_info_object(0);
+            double start =
+                __kmp_threads[ gtid ]->th.ompt_thread_info.last_tool_time;
+            double now;
+            if (ompt_callbacks.ompt_callback(ext_tool_time))
+                now = ompt_callbacks.ompt_callback(ext_tool_time)();
+            else
+                __kmp_elapsed(&now);
             ompt_callbacks.ompt_callback(ext_callback_chunk)(
                 &(task_info->task_data),
-                (int64_t)*p_lb,  // chunk lb
-                (int64_t)*p_ub,  // chunk ub
-                !status); // last chunk?
+                (int64_t)*p_lb, // chunk lb
+                (int64_t)*p_ub, // chunk ub
+                now - start,    // create_duration
+                !status);       // last chunk?
         }
 #endif
         OMPT_LOOP_END;
@@ -2321,11 +2343,19 @@ __kmp_dispatch_next(
     if (ompt_enabled &&
         ompt_callbacks.ompt_callback(ext_callback_chunk)) {
         ompt_task_info_t *task_info = __ompt_get_task_info_object(0);
+        double start =
+            __kmp_threads[ gtid ]->th.ompt_thread_info.last_tool_time;
+        double now;
+        if (ompt_callbacks.ompt_callback(ext_tool_time))
+            now = ompt_callbacks.ompt_callback(ext_tool_time)();
+        else
+            __kmp_elapsed(&now);
         ompt_callbacks.ompt_callback(ext_callback_chunk)(
             &(task_info->task_data),
-            (int64_t)*p_lb,  // chunk lb
-            (int64_t)*p_ub,  // chunk ub
-            !status); // last chunk?
+            (int64_t)*p_lb, // chunk lb
+            (int64_t)*p_ub, // chunk ub
+            now - start,    // create_duration
+            !status);       // last chunk?
     }
 #endif
 

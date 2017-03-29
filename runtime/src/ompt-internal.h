@@ -58,12 +58,13 @@ typedef struct ompt_lw_taskteam_s {
 //    void *parallel_function;          /* pointer to outlined function */
 //} ompt_parallel_info_t;
 
-
+// PVL: Added last_tool_time
 typedef struct {
     ompt_thread_data_t  thread_data;
     ompt_parallel_data_t  parallel_data; /* stored here from implicit barrier-begin until implicit-task-end */
     ompt_state_t        state;
     ompt_wait_id_t      wait_id;
+    double              last_tool_time;
     void                *idle_frame;
 } ompt_thread_info_t;
 
