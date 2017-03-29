@@ -72,7 +72,7 @@ __kmp_for_static_init(
 #if OMPT_SUPPORT && OMPT_OPTIONAL
     ompt_team_info_t *team_info = NULL;
     ompt_task_info_t *task_info = NULL;
-    // TODO: (PVL) Improve
+    // PVL: Store global lower and upper before they are tailored to thread
     T lower = *plower;
     T upper = *pupper;
 
@@ -137,14 +137,15 @@ __kmp_for_static_init(
                 ompt_scope_begin,
                 &(team_info->parallel_data),
                 &(task_info->task_data),
+                traits_t< T >::is_signed,
 #ifndef OMPT_STATIC_CHUNKS
                 lower,
                 upper,
 #endif
-                incr,
+                incr,                       // Currently always one because of OMP codegen
 #ifndef OMPT_STATIC_CHUNKS
                 (*pupper - *plower + 1),    // Chunk size
-                *plower,        // Thread. lower
+                *plower,                    // Thread. lower
 #endif
                 team_info->microtask);
         }
@@ -200,6 +201,7 @@ __kmp_for_static_init(
                 ompt_scope_begin,
                 &(team_info->parallel_data),
                 &(task_info->task_data),
+                traits_t< T >::is_signed,
 #ifndef OMPT_STATIC_CHUNKS
                 lower,
                 upper,
@@ -207,7 +209,7 @@ __kmp_for_static_init(
                 incr,
 #ifndef OMPT_STATIC_CHUNKS
                 (*pupper - *plower + 1),    // Chunk size
-                *plower,        // Thread. lower
+                *plower,                    // Thread. lower
 #endif
                 team_info->microtask);
         }
@@ -242,14 +244,15 @@ __kmp_for_static_init(
                 ompt_scope_begin,
                 &(team_info->parallel_data),
                 &(task_info->task_data),
+                traits_t< T >::is_signed,
 #ifndef OMPT_STATIC_CHUNKS
                 lower,
                 upper,
 #endif
-                incr,
+                incr,                       // Currently always one because of OMP codegen
 #ifndef OMPT_STATIC_CHUNKS
                 (*pupper - *plower + 1),    // Chunk size
-                *plower,        // Thread. lower
+                *plower,                    // Thread. lower
 #endif
                 team_info->microtask);
         }
@@ -410,14 +413,15 @@ __kmp_for_static_init(
             ompt_scope_begin,
             &(team_info->parallel_data),
             &(task_info->task_data),
+            traits_t< T >::is_signed,
 #ifndef OMPT_STATIC_CHUNKS
             lower,
             upper,
 #endif
-            incr,
+            incr,                       // Currently always one because of OMP codegen
 #ifndef OMPT_STATIC_CHUNKS
             (*pupper - *plower + 1),    // Chunk size
-            *plower,        // Thread. lower
+            *plower,                    // Thread. lower
 #endif
             team_info->microtask);
     }
@@ -809,6 +813,7 @@ __kmp_for_static_chunk(
                 &(task_info->task_data),
                 (int64_t)lower,  // chunk lb
                 (int64_t)upper,  // chunk ub
+                0,               // cannot find create_duration for static chunks
                 last); // last chunk?
     }
 #endif

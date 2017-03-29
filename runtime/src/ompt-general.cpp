@@ -270,6 +270,7 @@ void ompt_post_init()
                 task_data,
                 ompt_task_initial,
                 0,
+                0,
                 OMPT_GET_RETURN_ADDRESS(0));
         }
 

@@ -132,9 +132,9 @@
     macro (ompt_event_control,                  ompt_control_callback_t,       29) /* support control calls */  \
                                                                                                                 \
     /*--- Custom Events (part of extensions to generate grain graphs ---*/                                      \
-    macro (ext_callback_task_create_begin,      ext_callback_task_create_begin_t, 80) /* end of task creation */\
     macro (ext_callback_loop,                   ext_callback_loop_t,              81) /* loop construct */      \
-    macro (ext_callback_chunk,         ext_callback_chunk_t,    82) /* chunk is scheduled */  \
+    macro (ext_callback_chunk,                  ext_callback_chunk_t,             82) /* chunk is scheduled */  \
+    macro (ext_tool_time,                       ext_tool_time_t,                  83) /* tool-controlled time*/ \
 
 
 
@@ -351,20 +351,15 @@ typedef void (*ompt_callback_task_schedule_t) (
     ompt_task_data_t *second_task_data
 );
 
+// PVL - added duration parameter
 typedef void (*ompt_callback_task_create_t) (
     ompt_data_t *parent_task_data,    /* data of parent task         */
     const ompt_frame_t *parent_frame,       /* frame data for parent task   */
     ompt_data_t *new_task_data,       /* data of created task         */
     ompt_task_type_t type,
     int has_dependences,
+    double event_duration,
     const void *codeptr_ra
-);
-
-/* PVL: custom type */
-typedef void (*ext_callback_task_create_begin_t) (
-    ompt_data_t *parent_task_data,
-    const ompt_frame_t *parent_frame,
-    ompt_task_type_t type
 );
 
 /* task dependences */
@@ -474,11 +469,12 @@ typedef void (*ext_callback_loop_t) (
     ompt_scope_endpoint_t endpoint,
     ompt_data_t * parallel_data,    // The parallel region
     ompt_data_t * task_data,        // The implicit task of the worker
-    int64_t lower,                 // Lower iteration bound
-    int64_t upper,                 // Upper iteration bound
-    int64_t step,                  // Increment
+    int is_iter_signed,             // Signedness of iteration var.
+    int64_t lower,                  // Lower iteration bound
+    int64_t upper,                  // Upper iteration bound
+    int64_t step,                   // Increment
     uint64_t chunk_size,            // Chunk size
-    int64_t thread_lower,          // Lower iter. bound for thread
+    int64_t thread_lower,           // Lower iter. bound for thread
     const void * codeptr_ra
 );
 #else // OMPT_STATIC_CHUNKS is defined
@@ -487,6 +483,7 @@ typedef void (*ext_callback_loop_t) (
     ompt_scope_endpoint_t endpoint,
     ompt_data_t * parallel_data,    // The parallel region
     ompt_data_t * task_data,        // The implicit task of the worker
+    int is_iter_signed,             // Signedness of iteration var.
     int64_t step,                   // Increment
     const void * codeptr_ra
 );
@@ -497,8 +494,12 @@ typedef void (*ext_callback_chunk_t) (
     ompt_data_t *task_data,
     int64_t lower,
     int64_t upper,
+    double create_duration,
     int last_chunk // Is scheduled chunk last for thread?
 );
+
+/* PVL: custom type */
+typedef double (*ext_tool_time_t) (void);
 
 typedef enum ompt_sync_region_kind_e {
     ompt_sync_region_barrier = 1,

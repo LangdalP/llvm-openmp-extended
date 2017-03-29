@@ -496,19 +496,13 @@ __kmpc_omp_task_begin_if0( ident_t *loc_ref, kmp_int32 gtid, kmp_task_t * task )
         taskdata->ompt_task_info.frame.exit_runtime_frame =
             OMPT_GET_FRAME_ADDRESS(1);
     }
-    if (ompt_enabled) {
-        if (ompt_callbacks.ompt_callback(ompt_callback_task_create)) {
-            kmp_taskdata_t *parent = taskdata->td_parent;
-            ompt_task_data_t task_data = ompt_task_id_none;
-            ompt_callbacks.ompt_callback(ompt_callback_task_create)(
-                parent ? &(parent->ompt_task_info.task_data) : &task_data,
-                parent ? &(parent->ompt_task_info.frame) : NULL,
-                &(taskdata->ompt_task_info.task_data),
-                ompt_task_explicit,
-                0,
-                taskdata->ompt_task_info.function);
-        }
-
+    // PVL: 
+    kmp_info_t *thread = __kmp_threads[ gtid ];
+    if (ompt_enabled && ompt_callbacks.ompt_callback(ext_tool_time)) {
+        thread->th.ompt_thread_info.last_tool_time = ompt_callbacks.ompt_callback(ext_tool_time)();
+    }
+    else {
+        __kmp_elapsed(&(thread->th.ompt_thread_info.last_tool_time));
     }
 
  #endif
@@ -1181,18 +1175,14 @@ __kmpc_omp_task_alloc( ident_t *loc_ref, kmp_int32 gtid, kmp_int32 flags,
                   sizeof_kmp_task_t, sizeof_shareds, task_entry) );
 #endif
 
-    // PVL: Notify tool about start of task creation
+    // PVL: Get current time from tool or runtime method, set in ompt_thread_info struct
 #if OMPT_SUPPORT
     kmp_info_t *thread = __kmp_threads[ gtid ];
-    kmp_taskdata_t *parent_task = thread->th.th_current_task;
-    if (ompt_enabled) {
-        if (ompt_callbacks.ompt_callback(ext_callback_task_create_begin)) {
-            ompt_callbacks.ompt_callback(ext_callback_task_create_begin)(
-                parent_task ? &(parent_task->ompt_task_info.task_data) : NULL,
-                parent_task ? &(parent_task->ompt_task_info.frame) : NULL,
-                ompt_task_explicit
-            );
-        }
+    if (ompt_enabled && ompt_callbacks.ompt_callback(ext_tool_time)) {
+        thread->th.ompt_thread_info.last_tool_time = ompt_callbacks.ompt_callback(ext_tool_time)();
+    }
+    else {
+        __kmp_elapsed(&(thread->th.ompt_thread_info.last_tool_time));
     }
 #endif
 
@@ -1387,12 +1377,20 @@ __kmpc_omp_task_parts( ident_t *loc_ref, kmp_int32 gtid, kmp_task_t * new_task)
             OMPT_GET_FRAME_ADDRESS(1);
         if (ompt_callbacks.ompt_callback(ompt_callback_task_create)) {
             ompt_task_data_t task_data = ompt_task_id_none;
+            double start =
+                    __kmp_threads[ gtid ]->th.ompt_thread_info.last_tool_time;
+            double now;
+            if (ompt_callbacks.ompt_callback(ext_tool_time))
+                now = ompt_callbacks.ompt_callback(ext_tool_time)();
+            else
+                __kmp_elapsed(&now);
             ompt_callbacks.ompt_callback(ompt_callback_task_create)(
                 parent ? &(parent->ompt_task_info.task_data) : &task_data,
                 parent ? &(parent->ompt_task_info.frame) : NULL,
                 &(new_taskdata->ompt_task_info.task_data),
                 ompt_task_explicit,
                 0,
+                now-start,
                 new_taskdata->ompt_task_info.function);
         }
     }
@@ -1445,7 +1443,7 @@ __kmp_omp_task( kmp_int32 gtid, kmp_task_t * new_task, bool serialize_immediate 
 #endif
 
 #if OMP_45_ENABLED
-    // TODO: (PVL) Call ompt_callback_task_create for proxy tasks as well
+    // TODO: (PVL) Note start time for proxy tasks as well
     if ( new_taskdata->td_flags.proxy == TASK_PROXY ) {
         kmp_taskdata_t * current_task = __kmp_threads[ gtid ] -> th.th_current_task;
         if ( serialize_immediate )
@@ -1467,12 +1465,20 @@ __kmp_omp_task( kmp_int32 gtid, kmp_task_t * new_task, bool serialize_immediate 
                 OMPT_GET_FRAME_ADDRESS(1);
             if (ompt_callbacks.ompt_callback(ompt_callback_task_create)) {
                 ompt_task_data_t task_data = ompt_task_id_none;
+                double start =
+                    __kmp_threads[ gtid ]->th.ompt_thread_info.last_tool_time;
+                double now;
+                if (ompt_callbacks.ompt_callback(ext_tool_time))
+                    now = ompt_callbacks.ompt_callback(ext_tool_time)();
+                else
+                    __kmp_elapsed(&now);
                 ompt_callbacks.ompt_callback(ompt_callback_task_create)(
                     parent ? &(parent->ompt_task_info.task_data) : &task_data,
                     parent ? &(parent->ompt_task_info.frame) : NULL,
                     &(new_taskdata->ompt_task_info.task_data),
                     ompt_task_explicit,
                     0,
+                    now - start,
                     new_taskdata->ompt_task_info.function);
             }
         }
