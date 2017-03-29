@@ -1,4 +1,6 @@
-# LLVM OpenP - Extended for Grain Graphs
+# LLVM OpenMP - Extended for Grain Graphs
+
+Forked from: https://github.com/OpenMPToolsInterface/LLVM-openmp/tree/towards_tr4
 
 This version of the LLVM OpenMP runtime has the following OMPT extensions:
 
