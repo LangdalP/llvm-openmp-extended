@@ -11,7 +11,8 @@ The exact approach can still change, but at the time of writing, it is as follow
 
 **Note: `-DUSE_STATIC_CHUNKS=on` requires that programs are compiled with the following Clang fork:** https://github.com/LangdalP/clang/tree/pedervl/static-chunks-conditional
 ```c
-// If the tool registers ext_tool_time callback, it is used by the runtime to calculate durations
+// If the tool registers ext_tool_time callback, it is used by the runtime to calculate durations.
+// If it is not registered, an internal equivalent to omp_get_wtime is used instead.
 typedef double (*ext_tool_time_t) (void);
 
 // New ompt_callback_task_create
