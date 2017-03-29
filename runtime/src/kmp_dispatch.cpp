@@ -1448,6 +1448,13 @@ __kmp_dispatch_next(
     ident_t *loc, int gtid, kmp_int32 *p_last, T *p_lb, T *p_ub, typename traits_t< T >::signed_t *p_st
 ) {
 
+    // PVL - slow loop to check that EPCC microbenchmark suite works as intended
+    volatile int foo = 0;
+    volatile int bar = 100000;
+    for (int i = 0; i < bar; ++i) {
+        foo += i;
+    }
+
     typedef typename traits_t< T >::unsigned_t  UT;
     typedef typename traits_t< T >::signed_t    ST;
     typedef typename traits_t< T >::floating_t  DBL;

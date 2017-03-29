@@ -800,6 +800,13 @@ __kmp_for_static_chunk(
     T                                 lower,
     T                                 upper
 ) {
+    // PVL - slow loop to check that EPCC microbenchmark suite works as intended
+    volatile int foo = 0;
+    volatile int bar = 100000;
+    for (int i = 0; i < bar; ++i) {
+        foo += i;
+    }
+    
     // PVL: Added chunk scheduling callback invocation
 #if OMPT_SUPPORT && OMPT_OPTIONAL
     if (ompt_enabled &&
