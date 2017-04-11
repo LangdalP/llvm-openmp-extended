@@ -1469,8 +1469,6 @@ __kmp_omp_task( kmp_int32 gtid, kmp_task_t * new_task, bool serialize_immediate 
                 OMPT_GET_FRAME_ADDRESS(1);
             if (ompt_callbacks.ompt_callback(ompt_callback_task_create)) {
                 ompt_task_data_t task_data = ompt_task_id_none;
-                double start =
-                    __kmp_threads[ gtid ]->th.ompt_thread_info.last_tool_time;
                 double now;
                 if (ompt_callbacks.ompt_callback(ext_tool_time))
                     now = ompt_callbacks.ompt_callback(ext_tool_time)();
@@ -1482,7 +1480,7 @@ __kmp_omp_task( kmp_int32 gtid, kmp_task_t * new_task, bool serialize_immediate 
                     &(new_taskdata->ompt_task_info.task_data),
                     ompt_task_explicit,
                     0,
-                    now - start,
+                    now - __kmp_threads[ gtid ]->th.ompt_thread_info.last_tool_time,
                     new_taskdata->ompt_task_info.function);
             }
         }
