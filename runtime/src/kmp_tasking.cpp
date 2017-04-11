@@ -1446,26 +1446,19 @@ __kmp_omp_task( kmp_int32 gtid, kmp_task_t * new_task, bool serialize_immediate 
     }
 #endif
 
+    /* Should we execute the new task or queue it?   For now, let's just always try to
+       queue it.  If the queue fills up, then we'll execute it.  */
 #if OMP_45_ENABLED
-    // TODO: (PVL) Note start time for proxy tasks as well
-    if ( new_taskdata->td_flags.proxy == TASK_PROXY ) {
-        kmp_taskdata_t * current_task = __kmp_threads[ gtid ] -> th.th_current_task;
-        if ( serialize_immediate )
-            new_taskdata -> td_flags.task_serial = 1;
-        __kmp_invoke_task( gtid, new_task, current_task );
-    }
-    else {
+    if ( new_taskdata->td_flags.proxy == TASK_PROXY || __kmp_push_task( gtid, new_task ) == TASK_NOT_PUSHED ) // if cannot defer
+#else
+    if ( __kmp_push_task( gtid, new_task ) == TASK_NOT_PUSHED ) // if cannot defer
 #endif
-
-        // Attempt to push
-        kmp_int32 push_ret = __kmp_push_task(gtid, new_task);
-
+    {                                                           // Execute this task immediately
+        kmp_taskdata_t * current_task = __kmp_threads[ gtid ] -> th.th_current_task;
         // PVL: ompt_callback_task_create moved here so that measured task creation duration is more accurate
 #if OMPT_SUPPORT
-        kmp_taskdata_t *parent;
         if (ompt_enabled) {
-            parent = new_taskdata->td_parent;
-            parent->ompt_task_info.frame.reenter_runtime_frame =
+            current_task->ompt_task_info.frame.reenter_runtime_frame =
                 OMPT_GET_FRAME_ADDRESS(1);
             if (ompt_callbacks.ompt_callback(ompt_callback_task_create)) {
                 ompt_task_data_t task_data = ompt_task_id_none;
@@ -1475,8 +1468,8 @@ __kmp_omp_task( kmp_int32 gtid, kmp_task_t * new_task, bool serialize_immediate 
                 else
                     __kmp_elapsed(&now);
                 ompt_callbacks.ompt_callback(ompt_callback_task_create)(
-                    parent ? &(parent->ompt_task_info.task_data) : &task_data,
-                    parent ? &(parent->ompt_task_info.frame) : NULL,
+                    current_task ? &(current_task->ompt_task_info.task_data) : &task_data,
+                    current_task ? &(current_task->ompt_task_info.frame) : NULL,
                     &(new_taskdata->ompt_task_info.task_data),
                     ompt_task_explicit,
                     0,
@@ -1485,20 +1478,10 @@ __kmp_omp_task( kmp_int32 gtid, kmp_task_t * new_task, bool serialize_immediate 
             }
         }
 #endif
-
-        /* Should we execute the new task or queue it?   For now, let's just always try to
-           queue it.  If the queue fills up, then we'll execute it.  */
-        if (push_ret == TASK_NOT_PUSHED) // if cannot defer
-        {                                                           // Execute this task immediately
-            kmp_taskdata_t *current_task = __kmp_threads[gtid]->th.th_current_task;
-            if (serialize_immediate)
-                new_taskdata->td_flags.task_serial = 1;
-            __kmp_invoke_task(gtid, new_task, current_task);
-        }
-
-#if OMP_45_ENABLED
+        if ( serialize_immediate )
+            new_taskdata -> td_flags.task_serial = 1;
+        __kmp_invoke_task( gtid, new_task, current_task );
     }
-#endif
 
 #if OMPT_SUPPORT
     if (ompt_enabled) {
