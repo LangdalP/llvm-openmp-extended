@@ -1189,11 +1189,13 @@ __kmpc_omp_task_alloc( ident_t *loc_ref, kmp_int32 gtid, kmp_int32 flags,
     // PVL: Get current time from tool or runtime method, set in ompt_thread_info struct
 #if OMPT_SUPPORT
     kmp_info_t *thread = __kmp_threads[ gtid ];
-    if (ompt_enabled && ompt_callbacks.ompt_callback(ext_tool_time)) {
-        thread->th.ompt_thread_info.last_tool_time = ompt_callbacks.ompt_callback(ext_tool_time)();
-    }
-    else {
-        __kmp_elapsed(&(thread->th.ompt_thread_info.last_tool_time));
+    if (ompt_enabled && ompt_callbacks.ompt_callback(ompt_callback_task_create)) {
+        if (ompt_callbacks.ompt_callback(ext_tool_time)) {
+            thread->th.ompt_thread_info.last_tool_time = ompt_callbacks.ompt_callback(ext_tool_time)();
+        }
+        else {
+            __kmp_elapsed(&(thread->th.ompt_thread_info.last_tool_time));
+        }
     }
 #endif
 
