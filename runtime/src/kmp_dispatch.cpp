@@ -1454,14 +1454,11 @@ __kmp_dispatch_next(
     // PVL
 #if OMPT_SUPPORT && OMPT_OPTIONAL
     kmp_info_t *thread = __kmp_threads[ gtid ];
-    if (ompt_enabled && ompt_callbacks.ompt_callback(ext_callback_chunk)) {
-        if (ompt_callbacks.ompt_callback(ext_tool_time)) {
-            thread->th.ompt_thread_info.last_tool_time =
-                ompt_callbacks.ompt_callback(ext_tool_time)();
-        }
-        else {
-            __kmp_elapsed_thread(&(thread->th.ompt_thread_info.last_tool_time));
-        }
+    if (   ompt_enabled
+        && ompt_callbacks.ompt_callback(ext_callback_chunk)
+        && ompt_callbacks.ompt_callback(ext_tool_time)) {
+        thread->th.ompt_thread_info.last_tool_time =
+            ompt_callbacks.ompt_callback(ext_tool_time)();
     }
 #endif
 
@@ -1605,18 +1602,17 @@ __kmp_dispatch_next(
         if (ompt_enabled &&
             ompt_callbacks.ompt_callback(ext_callback_chunk)) {
             ompt_task_info_t *task_info = __ompt_get_task_info_object(0);
-            const double start =
-                __kmp_threads[ gtid ]->th.ompt_thread_info.last_tool_time;
-            double now;
-            if (ompt_callbacks.ompt_callback(ext_tool_time))
-                now = ompt_callbacks.ompt_callback(ext_tool_time)();
-            else
-                __kmp_elapsed_thread(&now);
+            double create_duration = 0;
+            if (ompt_callbacks.ompt_callback(ext_tool_time)) {
+                const double start =
+                    thread->th.ompt_thread_info.last_tool_time;
+                create_duration = ompt_callbacks.ompt_callback(ext_tool_time)() - start;
+            }
             ompt_callbacks.ompt_callback(ext_callback_chunk)(
                 &(task_info->task_data),
                 (int64_t)*p_lb, // chunk lb
                 (int64_t)*p_ub, // chunk ub
-                now - start,    // create_duration
+                create_duration,
                 !status);       // last chunk?
         }
 #endif
@@ -2346,18 +2342,17 @@ __kmp_dispatch_next(
     if (ompt_enabled &&
         ompt_callbacks.ompt_callback(ext_callback_chunk)) {
         ompt_task_info_t *task_info = __ompt_get_task_info_object(0);
-        const double start =
-            __kmp_threads[ gtid ]->th.ompt_thread_info.last_tool_time;
-        double now;
-        if (ompt_callbacks.ompt_callback(ext_tool_time))
-            now = ompt_callbacks.ompt_callback(ext_tool_time)();
-        else
-            __kmp_elapsed_thread(&now);
+        double create_duration = 0;
+        if (ompt_callbacks.ompt_callback(ext_tool_time)) {
+            const double start =
+                thread->th.ompt_thread_info.last_tool_time;
+            create_duration = ompt_callbacks.ompt_callback(ext_tool_time)() - start;
+        }
         ompt_callbacks.ompt_callback(ext_callback_chunk)(
             &(task_info->task_data),
             (int64_t)*p_lb, // chunk lb
             (int64_t)*p_ub, // chunk ub
-            now - start,    // create_duration
+            create_duration,
             !status);       // last chunk?
     }
 #endif

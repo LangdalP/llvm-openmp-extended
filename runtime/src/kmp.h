@@ -3099,7 +3099,6 @@ extern void __kmp_resume_64( int target_gtid, kmp_flag_64 *flag );
 extern void __kmp_resume_oncore( int target_gtid, kmp_flag_oncore *flag );
 
 extern void __kmp_elapsed( double * );
-extern void __kmp_elapsed_thread( double * );
 extern void __kmp_elapsed_tick( double * );
 
 extern void __kmp_enable( int old_state );
