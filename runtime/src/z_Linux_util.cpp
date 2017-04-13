@@ -2145,11 +2145,21 @@ void
 __kmp_elapsed_thread( double *t )
 {
     int status;
+# ifdef FIX_SGI_CLOCK
     struct timespec ts;
-    status = clock_gettime( CLOCK_THREAD_CPUTIME_ID, &ts );
+
+    status = clock_gettime( CLOCK_PROCESS_CPUTIME_ID, &ts );
     KMP_CHECK_SYSFAIL_ERRNO( "clock_gettime", status );
     *t = (double) ts.tv_nsec * (1.0 / (double) KMP_NSEC_PER_SEC) +
         (double) ts.tv_sec;
+# else
+    struct timeval tv;
+
+    status = gettimeofday( & tv, NULL );
+    KMP_CHECK_SYSFAIL_ERRNO( "gettimeofday", status );
+    *t = (double) tv.tv_usec * (1.0 / (double) KMP_USEC_PER_SEC) +
+        (double) tv.tv_sec;
+# endif
 }
 
 /* Calculate the elapsed wall clock tick for the user */
