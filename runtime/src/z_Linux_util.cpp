@@ -2140,6 +2140,18 @@ __kmp_elapsed( double *t )
 # endif
 }
 
+/* Calculate the elapsed wall clock time on the thread */
+void
+__kmp_elapsed_thread( double *t )
+{
+    int status;
+    struct timespec ts;
+    status = clock_gettime( CLOCK_THREAD_CPUTIME_ID, &ts );
+    KMP_CHECK_SYSFAIL_ERRNO( "clock_gettime", status );
+    *t = (double) ts.tv_nsec * (1.0 / (double) KMP_NSEC_PER_SEC) +
+        (double) ts.tv_sec;
+}
+
 /* Calculate the elapsed wall clock tick for the user */
 void
 __kmp_elapsed_tick( double *t )

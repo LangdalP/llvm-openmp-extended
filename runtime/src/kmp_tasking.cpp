@@ -501,18 +501,20 @@ __kmpc_omp_task_begin_if0( ident_t *loc_ref, kmp_int32 gtid, kmp_task_t * task )
         if (ompt_callbacks.ompt_callback(ompt_callback_task_create)) {
             kmp_taskdata_t *parent = taskdata->td_parent;
             ompt_task_data_t task_data = ompt_task_id_none;
+            const double start =
+                __kmp_threads[ gtid ]->th.ompt_thread_info.last_tool_time;
             double now;
             if (ompt_callbacks.ompt_callback(ext_tool_time))
                 now = ompt_callbacks.ompt_callback(ext_tool_time)();
             else
-                __kmp_elapsed(&now);
+                __kmp_elapsed_thread(&now);
             ompt_callbacks.ompt_callback(ompt_callback_task_create)(
                 parent ? &(parent->ompt_task_info.task_data) : &task_data,
                 parent ? &(parent->ompt_task_info.frame) : NULL,
                 &(taskdata->ompt_task_info.task_data),
                 ompt_task_explicit,
                 0,
-                now - __kmp_threads[ gtid ]->th.ompt_thread_info.last_tool_time,
+                now - start,
                 taskdata->ompt_task_info.function);
         }
     }
@@ -1194,7 +1196,7 @@ __kmpc_omp_task_alloc( ident_t *loc_ref, kmp_int32 gtid, kmp_int32 flags,
             thread->th.ompt_thread_info.last_tool_time = ompt_callbacks.ompt_callback(ext_tool_time)();
         }
         else {
-            __kmp_elapsed(&(thread->th.ompt_thread_info.last_tool_time));
+            __kmp_elapsed_thread(&(thread->th.ompt_thread_info.last_tool_time));
         }
     }
 #endif
@@ -1390,20 +1392,20 @@ __kmpc_omp_task_parts( ident_t *loc_ref, kmp_int32 gtid, kmp_task_t * new_task)
             OMPT_GET_FRAME_ADDRESS(1);
         if (ompt_callbacks.ompt_callback(ompt_callback_task_create)) {
             ompt_task_data_t task_data = ompt_task_id_none;
-            double start =
-                    __kmp_threads[ gtid ]->th.ompt_thread_info.last_tool_time;
+            const double start =
+                __kmp_threads[ gtid ]->th.ompt_thread_info.last_tool_time;
             double now;
             if (ompt_callbacks.ompt_callback(ext_tool_time))
                 now = ompt_callbacks.ompt_callback(ext_tool_time)();
             else
-                __kmp_elapsed(&now);
+                __kmp_elapsed_thread(&now);
             ompt_callbacks.ompt_callback(ompt_callback_task_create)(
                 parent ? &(parent->ompt_task_info.task_data) : &task_data,
                 parent ? &(parent->ompt_task_info.frame) : NULL,
                 &(new_taskdata->ompt_task_info.task_data),
                 ompt_task_explicit,
                 0,
-                now-start,
+                now - start,
                 new_taskdata->ompt_task_info.function);
         }
     }
@@ -1478,18 +1480,20 @@ __kmp_omp_task( kmp_int32 gtid, kmp_task_t * new_task, bool serialize_immediate 
                 OMPT_GET_FRAME_ADDRESS(1);
             if (ompt_callbacks.ompt_callback(ompt_callback_task_create)) {
                 ompt_task_data_t task_data = ompt_task_id_none;
+                const double start =
+                    __kmp_threads[ gtid ]->th.ompt_thread_info.last_tool_time;
                 double now;
                 if (ompt_callbacks.ompt_callback(ext_tool_time))
                     now = ompt_callbacks.ompt_callback(ext_tool_time)();
                 else
-                    __kmp_elapsed(&now);
+                    __kmp_elapsed_thread(&now);
                 ompt_callbacks.ompt_callback(ompt_callback_task_create)(
                     parent ? &(parent->ompt_task_info.task_data) : &task_data,
                     parent ? &(parent->ompt_task_info.frame) : NULL,
                     &(new_taskdata->ompt_task_info.task_data),
                     ompt_task_explicit,
                     0,
-                    now - __kmp_threads[ gtid ]->th.ompt_thread_info.last_tool_time,
+                    now - start, 
                     new_taskdata->ompt_task_info.function);
             }
         }
