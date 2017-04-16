@@ -1421,7 +1421,7 @@ __kmp_dispatch_finish_chunk( int gtid, ident_t *loc )
                 0,                                                          \
                 0,                                                          \
                 0,                                                          \
-                team_info->microtask);                                      \
+                OMPT_GET_RETURN_ADDRESS(0));                                \
         }                                                                   \
     }
 #else // OMPT_STATIC_CHUNKS is defined
