@@ -1236,7 +1236,7 @@ __kmp_dispatch_init(
             ompt_scope_begin,
             &(team_info->parallel_data),
             &(task_info->task_data),
-            1, /* TODO: Reimplement traits_t< T >::is_signed */
+            traits_t< T >::is_signed,
             st,
             team_info->microtask);
     }
@@ -1391,6 +1391,7 @@ __kmp_dispatch_finish_chunk( int gtid, ident_t *loc )
 
 #endif /* KMP_GOMP_COMPAT */
 
+// PVL: Modified this
 /* Define a macro for exiting __kmp_dispatch_next(). If status is 0
  * (no more work), then tell OMPT the loop is over. In some cases
  * kmp_dispatch_fini() is not called. */

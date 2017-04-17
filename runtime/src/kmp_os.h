@@ -184,6 +184,7 @@ typedef double  kmp_real64;
 #define  KMP_INT_MIN     ((kmp_int32)0x80000000)
 
 #ifdef __cplusplus
+    // PVL: Modified these to indicate whether type is signed
     //-------------------------------------------------------------------------
     // template for debug prints specification ( d, u, lld, llu ), and to obtain
     // signed/unsigned flavors of a type
@@ -199,6 +200,7 @@ typedef double  kmp_real64;
         static const signed_t max_value = 0x7fffffff;
         static const signed_t min_value = 0x80000000;
         static const int type_size = sizeof(signed_t);
+        static const int is_signed = 1;
     };
     // unsigned int
     template<>
@@ -210,6 +212,7 @@ typedef double  kmp_real64;
         static const unsigned_t max_value = 0xffffffff;
         static const unsigned_t min_value = 0x00000000;
         static const int type_size = sizeof(unsigned_t);
+        static const int is_signed = 0;
     };
     // long long
     template<>
@@ -221,6 +224,7 @@ typedef double  kmp_real64;
         static const signed_t max_value = 0x7fffffffffffffffLL;
         static const signed_t min_value = 0x8000000000000000LL;
         static const int type_size = sizeof(signed_t);
+        static const int is_signed = 1;
     };
     // unsigned long long
     template<>
@@ -232,6 +236,7 @@ typedef double  kmp_real64;
         static const unsigned_t max_value = 0xffffffffffffffffLL;
         static const unsigned_t min_value = 0x0000000000000000LL;
         static const int type_size = sizeof(unsigned_t);
+        static const int is_signed = 0;
     };
     //-------------------------------------------------------------------------
 #endif // __cplusplus
