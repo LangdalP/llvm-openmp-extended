@@ -817,6 +817,42 @@ __kmpc_for_static_init_8u( ident_t *loc, kmp_int32 gtid, kmp_int32 schedtype, km
 @}
 */
 
+// PVL
+
+kmp_int32
+__kmpc_should_callback_per_chunk( ident_t *loc )
+{
+    return 0;
+}
+
+void
+__kmpc_for_static_chunk_4( ident_t *loc, kmp_int32 global_tid, kmp_int32 last,
+                                   kmp_int32 lower, kmp_int32 upper)
+{
+    // Do nothing
+}
+
+void
+__kmpc_for_static_chunk_4u( ident_t *loc, kmp_int32 global_tid, kmp_int32 last,
+                            kmp_uint32 lower, kmp_uint32 upper)
+{
+    // Do nothing
+}
+
+void
+__kmpc_for_static_chunk_8( ident_t *loc, kmp_int32 global_tid, kmp_int32 last,
+                           kmp_int64 lower, kmp_int64 upper)
+{
+    // Do nothing
+}
+
+void
+__kmpc_for_static_chunk_8u( ident_t *loc, kmp_int32 global_tid, kmp_int32 last,
+                            kmp_uint64 lower, kmp_uint64 upper)
+{
+    // Do nothing
+}
+
 /*!
 @ingroup WORK_SHARING
 @param    loc       Source code location
