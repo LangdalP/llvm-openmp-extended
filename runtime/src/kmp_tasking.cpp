@@ -496,16 +496,24 @@ __kmpc_omp_task_begin_if0( ident_t *loc_ref, kmp_int32 gtid, kmp_task_t * task )
         taskdata->ompt_task_info.frame.exit_runtime_frame =
             OMPT_GET_FRAME_ADDRESS(1);
     }
+    // PVL: Added time calculation here
     if (ompt_enabled) {
         if (ompt_callbacks.ompt_callback(ompt_callback_task_create)) {
             kmp_taskdata_t *parent = taskdata->td_parent;
             ompt_task_data_t task_data = ompt_task_id_none;
+            double create_duration = 0;
+            if (ompt_callbacks.ompt_callback(ext_tool_time)) {
+                const double start =
+                    __kmp_threads[ gtid ]->th.ompt_thread_info.last_tool_time;
+                create_duration = ompt_callbacks.ompt_callback(ext_tool_time)() - start;
+            }
             ompt_callbacks.ompt_callback(ompt_callback_task_create)(
                 parent ? &(parent->ompt_task_info.task_data) : &task_data,
                 parent ? &(parent->ompt_task_info.frame) : NULL,
                 &(taskdata->ompt_task_info.task_data),
                 ompt_task_explicit,
                 0,
+                create_duration,
                 taskdata->ompt_task_info.function);
         }
 
@@ -1181,6 +1189,18 @@ __kmpc_omp_task_alloc( ident_t *loc_ref, kmp_int32 gtid, kmp_int32 flags,
                   sizeof_kmp_task_t, sizeof_shareds, task_entry) );
 #endif
 
+    // PVL: Get current time from tool or runtime method, set in ompt_thread_info struct
+#if OMPT_SUPPORT
+    kmp_info_t *thread = __kmp_threads[ gtid ];
+    if (   ompt_enabled
+        && ompt_callbacks.ompt_callback(ompt_callback_task_create)
+        && ompt_callbacks.ompt_callback(ext_tool_time)) {
+        thread->th.ompt_thread_info.last_tool_time = ompt_callbacks.ompt_callback(ext_tool_time)();
+    }
+#endif
+
+    // PVL: Taskdata and task structures do not exist before this point
+
     retval = __kmp_task_alloc( loc_ref, gtid, input_flags, sizeof_kmp_task_t,
                                sizeof_shareds, task_entry );
 
@@ -1364,6 +1384,7 @@ __kmpc_omp_task_parts( ident_t *loc_ref, kmp_int32 gtid, kmp_task_t * new_task)
                   gtid, loc_ref, new_taskdata ) );
 
 #if OMPT_SUPPORT
+    // PVL: Added time calculation
     kmp_taskdata_t *parent;
     if (ompt_enabled) {
         parent = new_taskdata->td_parent;
@@ -1371,12 +1392,19 @@ __kmpc_omp_task_parts( ident_t *loc_ref, kmp_int32 gtid, kmp_task_t * new_task)
             OMPT_GET_FRAME_ADDRESS(1);
         if (ompt_callbacks.ompt_callback(ompt_callback_task_create)) {
             ompt_task_data_t task_data = ompt_task_id_none;
+            double create_duration = 0;
+            if (ompt_callbacks.ompt_callback(ext_tool_time)) {
+                const double start =
+                    __kmp_threads[ gtid ]->th.ompt_thread_info.last_tool_time;
+                create_duration = ompt_callbacks.ompt_callback(ext_tool_time)() - start;
+            }
             ompt_callbacks.ompt_callback(ompt_callback_task_create)(
                 parent ? &(parent->ompt_task_info.task_data) : &task_data,
                 parent ? &(parent->ompt_task_info.frame) : NULL,
                 &(new_taskdata->ompt_task_info.task_data),
                 ompt_task_explicit,
                 0,
+                create_duration,
                 new_taskdata->ompt_task_info.function);
         }
     }
@@ -1476,6 +1504,9 @@ __kmpc_omp_task( ident_t *loc_ref, kmp_int32 gtid, kmp_task_t * new_task)
                   gtid, loc_ref, new_taskdata ) );
 
 #if OMPT_SUPPORT
+    // PVL: Added time calculation
+    // TODO: Move this callback after allocation
+    //      (but before potentially serialized execution)
     kmp_taskdata_t *parent;
     if (ompt_enabled) {
         parent = new_taskdata->td_parent;
@@ -1483,12 +1514,19 @@ __kmpc_omp_task( ident_t *loc_ref, kmp_int32 gtid, kmp_task_t * new_task)
             OMPT_GET_FRAME_ADDRESS(1);
         if (ompt_callbacks.ompt_callback(ompt_callback_task_create)) {
             ompt_task_data_t task_data = ompt_task_id_none;
+            double create_duration = 0;
+            if (ompt_callbacks.ompt_callback(ext_tool_time)) {
+                const double start =
+                    __kmp_threads[ gtid ]->th.ompt_thread_info.last_tool_time;
+                create_duration = ompt_callbacks.ompt_callback(ext_tool_time)() - start;
+            }
             ompt_callbacks.ompt_callback(ompt_callback_task_create)(
                 parent ? &(parent->ompt_task_info.task_data) : &task_data,
                 parent ? &(parent->ompt_task_info.frame) : NULL,
                 &(new_taskdata->ompt_task_info.task_data),
                 ompt_task_explicit,
                 0,
+                create_duration,
                 new_taskdata->ompt_task_info.function);
         }
     }

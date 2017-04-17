@@ -151,8 +151,7 @@ typedef union ompt_data_u {
   ompt_id_t value; /* data initialized by runtime to unique id */
   void *ptr; /* pointer under tool control */
 } ompt_data_t;
-
-typedef ompt_data_t ompt_thread_data_t;
+ typedef ompt_data_t ompt_thread_data_t;
 #define ompt_thread_id_none {.value=0}     /* non-standard */
 
 typedef ompt_data_t ompt_task_data_t;
@@ -351,12 +350,14 @@ typedef void (*ompt_callback_task_schedule_t) (
     ompt_task_data_t *second_task_data
 );
 
+// PVL - added duration parameter
 typedef void (*ompt_callback_task_create_t) (
     ompt_data_t *parent_task_data,    /* data of parent task         */
     const ompt_frame_t *parent_frame,       /* frame data for parent task   */
     ompt_data_t *new_task_data,       /* data of created task         */
     ompt_task_type_t type,
     int has_dependences,
+    double event_duration,
     const void *codeptr_ra
 );
 
@@ -453,7 +454,7 @@ typedef void (*ompt_callback_work_t) (
     const void *codeptr_ra
 );
 
-/* PVL: custom type */
+/* PVL: custom types */
 typedef enum ext_loop_sched_e {
     ext_loop_sched_static   = 1,
     ext_loop_sched_dynamic  = 2,
@@ -479,7 +480,7 @@ typedef void (*ext_callback_chunk_t) (
 );
 
 typedef double (*ext_tool_time_t) (void);
-/* PVL: end of custom type */
+/* PVL: end of custom types */
 
 typedef enum ompt_sync_region_kind_e {
     ompt_sync_region_barrier = 1,
