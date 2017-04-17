@@ -72,6 +72,9 @@ __kmp_for_static_init(
 #if OMPT_SUPPORT && OMPT_OPTIONAL
     ompt_team_info_t *team_info = NULL;
     ompt_task_info_t *task_info = NULL;
+    // PVL: Store global lower and upper before they are tailored to thread
+    T lower = *plower;
+    T upper = *pupper;
 
     if (ompt_enabled) {
         // Only fully initialize variables needed by OMPT if OMPT is enabled.
@@ -124,16 +127,18 @@ __kmp_for_static_init(
         #endif
         KE_TRACE( 10, ("__kmpc_for_static_init: T#%d return\n", global_tid ) );
 
-//TODO for intel: need to be able to distinguish between sections and loops for ompt callback
+        // TODO for intel: need to be able to distinguish between sections and loops for ompt callback
+        // PVL: Replaced ompt_callback_work with ext_callback_loop
 #if OMPT_SUPPORT && OMPT_OPTIONAL
         if (ompt_enabled &&
-            ompt_callbacks.ompt_callback(ompt_callback_work)) {
-            ompt_callbacks.ompt_callback(ompt_callback_work)(
-                ompt_work_loop,
+            ompt_callbacks.ompt_callback(ext_callback_loop)) {
+            ompt_callbacks.ompt_callback(ext_callback_loop)(
+                ext_loop_sched_static,
                 ompt_scope_begin,
                 &(team_info->parallel_data),
                 &(task_info->task_data),
-                0,  //TODO: OMPT: verify loop count value (OpenMP-spec 4.6.2.18)
+                traits_t< T >::is_signed,
+                incr,                       // Currently always one because of OMP codegen
                 team_info->microtask);
         }
 #endif
@@ -178,16 +183,18 @@ __kmp_for_static_init(
         #endif
         KE_TRACE( 10, ("__kmpc_for_static_init: T#%d return\n", global_tid ) );
 
-//TODO for intel: (see first ompt callback in this function)
+        // TODO for intel: (see first ompt callback in this function)
+        // PVL: Replaced ompt_callback_work with ext_callback_loop
 #if OMPT_SUPPORT && OMPT_OPTIONAL
         if (ompt_enabled &&
-            ompt_callbacks.ompt_callback(ompt_callback_work)) {
-            ompt_callbacks.ompt_callback(ompt_callback_work)(
-                ompt_work_loop,
+            ompt_callbacks.ompt_callback(ext_callback_loop)) {
+            ompt_callbacks.ompt_callback(ext_callback_loop)(
+                ext_loop_sched_static,
                 ompt_scope_begin,
                 &(team_info->parallel_data),
                 &(task_info->task_data),
-                *pstride, //TODO: OMPT: verify loop count value (OpenMP-spec 4.6.2.18)
+                traits_t< T >::is_signed,
+                incr,
                 team_info->microtask);
         }
 #endif
@@ -370,16 +377,18 @@ __kmp_for_static_init(
     #endif
     KE_TRACE( 10, ("__kmpc_for_static_init: T#%d return\n", global_tid ) );
 
-//TODO for intel: (see first ompt callback in this function)
+    // TODO for intel: (see first ompt callback in this function)
+    // PVL: Replaced ompt_callback_work with ext_callback_loop
 #if OMPT_SUPPORT && OMPT_OPTIONAL
     if (ompt_enabled &&
-        ompt_callbacks.ompt_callback(ompt_callback_work)) {
-        ompt_callbacks.ompt_callback(ompt_callback_work)(
-            ompt_work_loop,
+        ompt_callbacks.ompt_callback(ext_callback_loop)) {
+        ompt_callbacks.ompt_callback(ext_callback_loop)(
+            ext_loop_sched_static,
             ompt_scope_begin,
             &(team_info->parallel_data),
             &(task_info->task_data),
-            trip_count, //TODO: OMPT: verify loop count value (OpenMP-spec 4.6.2.18; email discussion on count value semantics)
+            traits_t< T >::is_signed,
+            incr,
             team_info->microtask);
     }
 #endif
@@ -746,6 +755,35 @@ __kmp_team_static_init(
     #endif
 }
 
+/*
+ * PVL
+ * Template for __kmpc_for_static_chunk_4 and so on.
+ * Used to notify tools about new chunks.
+ */
+template< typename T >
+static void
+__kmp_for_static_chunk(
+    ident_t                          *loc,
+    kmp_int32                         global_tid,
+    kmp_int32                         last,
+    T                                 lower,
+    T                                 upper
+) {
+    // PVL: Added chunk scheduling callback invocation
+#if OMPT_SUPPORT && OMPT_OPTIONAL
+    if (ompt_enabled &&
+        ompt_callbacks.ompt_callback(ext_callback_chunk)) {
+        ompt_task_info_t *task_info = __ompt_get_task_info_object(0);
+        ompt_callbacks.ompt_callback(ext_callback_chunk)(
+                &(task_info->task_data),
+                (int64_t)lower,  // chunk lb
+                (int64_t)upper,  // chunk ub
+                0,               // cannot find create_duration for static chunks
+                last); // last chunk?
+    }
+#endif
+}
+
 //--------------------------------------------------------------------------------------
 extern "C" {
 
@@ -822,6 +860,12 @@ __kmpc_for_static_init_8u( ident_t *loc, kmp_int32 gtid, kmp_int32 schedtype, km
 kmp_int32
 __kmpc_should_callback_per_chunk( ident_t *loc )
 {
+#if OMPT_SUPPORT && OMPT_OPTIONAL
+    if (ompt_enabled &&
+        ompt_callbacks.ompt_callback(ext_callback_chunk)) {
+        return 1;
+    }
+#endif
     return 0;
 }
 
@@ -829,28 +873,28 @@ void
 __kmpc_for_static_chunk_4( ident_t *loc, kmp_int32 global_tid, kmp_int32 last,
                                    kmp_int32 lower, kmp_int32 upper)
 {
-    // Do nothing
+    __kmp_for_static_chunk< kmp_int32 >(loc, global_tid, last, lower, upper);
 }
 
 void
 __kmpc_for_static_chunk_4u( ident_t *loc, kmp_int32 global_tid, kmp_int32 last,
                             kmp_uint32 lower, kmp_uint32 upper)
 {
-    // Do nothing
+    __kmp_for_static_chunk< kmp_uint32 >(loc, global_tid, last, lower, upper);
 }
 
 void
 __kmpc_for_static_chunk_8( ident_t *loc, kmp_int32 global_tid, kmp_int32 last,
                            kmp_int64 lower, kmp_int64 upper)
 {
-    // Do nothing
+    __kmp_for_static_chunk< kmp_int64 >(loc, global_tid, last, lower, upper);
 }
 
 void
 __kmpc_for_static_chunk_8u( ident_t *loc, kmp_int32 global_tid, kmp_int32 last,
                             kmp_uint64 lower, kmp_uint64 upper)
 {
-    // Do nothing
+    __kmp_for_static_chunk< kmp_uint64 >(loc, global_tid, last, lower, upper);
 }
 
 /*!
