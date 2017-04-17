@@ -1236,7 +1236,7 @@ __kmp_dispatch_init(
             ompt_scope_begin,
             &(team_info->parallel_data),
             &(task_info->task_data),
-            traits_t< T >::is_signed,
+            1, /* TODO: Reimplement traits_t< T >::is_signed */
             st,
             team_info->microtask);
     }
