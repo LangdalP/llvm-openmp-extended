@@ -130,6 +130,10 @@
                                                                                                                 \
     /*--- Old Events --- */                                                                                     \
     macro (ompt_event_control,                  ompt_control_callback_t,       29) /* support control calls */  \
+                                                                                                                \
+    macro (ext_callback_loop,                   ext_callback_loop_t,            81)                             \
+    macro (ext_callback_chunk,                  ext_callback_chunk_t,           82)                             \
+    macro (ext_tool_time,                       ext_tool_time_t,                83)                             \
 
 
 
@@ -448,6 +452,34 @@ typedef void (*ompt_callback_work_t) (
     uint64_t count,
     const void *codeptr_ra
 );
+
+/* PVL: custom type */
+typedef enum ext_loop_sched_e {
+    ext_loop_sched_static   = 1,
+    ext_loop_sched_dynamic  = 2,
+    ext_loop_sched_guided   = 3
+} ext_loop_sched_t;
+
+typedef void (*ext_callback_loop_t) (
+    ext_loop_sched_t loop_sched,
+    ompt_scope_endpoint_t endpoint,
+    ompt_data_t * parallel_data,    // The parallel region
+    ompt_data_t * task_data,        // The implicit task of the worker
+    int is_iter_signed,             // Signedness of iteration var.
+    int64_t step,                   // Increment
+    const void * codeptr_ra
+);
+
+typedef void (*ext_callback_chunk_t) (
+    ompt_data_t *task_data,
+    int64_t lower,
+    int64_t upper,
+    double create_duration,
+    int last_chunk // Is scheduled chunk last for thread?
+);
+
+typedef double (*ext_tool_time_t) (void);
+/* PVL: end of custom type */
 
 typedef enum ompt_sync_region_kind_e {
     ompt_sync_region_barrier = 1,
