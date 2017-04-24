@@ -1422,16 +1422,7 @@ static int
 __kmp_dispatch_next(
     ident_t *loc, int gtid, kmp_int32 *p_last, T *p_lb, T *p_ub, typename traits_t< T >::signed_t *p_st
 ) {
-    // PVL: Note chunk creation start time
-#if OMPT_SUPPORT && OMPT_OPTIONAL
-    kmp_info_t *thread = __kmp_threads[ gtid ];
-    if (ompt_enabled
-        && ompt_callbacks.ompt_callback(ext_callback_chunk)
-        && ompt_callbacks.ompt_callback(ext_tool_time)) {
-        thread->th.ompt_thread_info.last_tool_time =
-            ompt_callbacks.ompt_callback(ext_tool_time)();
-    }
-#endif
+    // PVL: Used to note chunk creation start time here
 
     typedef typename traits_t< T >::unsigned_t  UT;
     typedef typename traits_t< T >::signed_t    ST;
@@ -1572,19 +1563,12 @@ __kmp_dispatch_next(
 #if OMPT_SUPPORT && OMPT_OPTIONAL
         if (ompt_enabled &&
             ompt_callbacks.ompt_callback(ext_callback_chunk)) {
-            ompt_task_info_t *task_info = __ompt_get_task_info_object(0);
-            double create_duration = 0;
-            if (ompt_callbacks.ompt_callback(ext_tool_time)) {
-                const double start =
-                    thread->th.ompt_thread_info.last_tool_time;
-                create_duration = ompt_callbacks.ompt_callback(ext_tool_time)() - start;
-            }
             ompt_callbacks.ompt_callback(ext_callback_chunk)(
-                &(task_info->task_data),
-                (int64_t)*p_lb, // chunk lb
-                (int64_t)*p_ub, // chunk ub
-                create_duration,
-                !status);       // last chunk?
+                NULL,
+                0,
+                0,
+                0,
+                0);
         }
 #endif
         OMPT_LOOP_END;
@@ -2311,19 +2295,12 @@ __kmp_dispatch_next(
 #if OMPT_SUPPORT && OMPT_OPTIONAL
     if (ompt_enabled &&
         ompt_callbacks.ompt_callback(ext_callback_chunk)) {
-        ompt_task_info_t *task_info = __ompt_get_task_info_object(0);
-        double create_duration = 0;
-        if (ompt_callbacks.ompt_callback(ext_tool_time)) {
-            const double start =
-                thread->th.ompt_thread_info.last_tool_time;
-            create_duration = ompt_callbacks.ompt_callback(ext_tool_time)() - start;
-        }
         ompt_callbacks.ompt_callback(ext_callback_chunk)(
-            &(task_info->task_data),
-            (int64_t)*p_lb, // chunk lb
-            (int64_t)*p_ub, // chunk ub
-            create_duration,
-            !status);       // last chunk?
+            NULL,
+            0,
+            0,
+            0,
+            0);
     }
 #endif
     OMPT_LOOP_END;
