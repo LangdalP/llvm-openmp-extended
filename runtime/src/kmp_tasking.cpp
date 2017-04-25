@@ -1505,7 +1505,7 @@ __kmpc_omp_task( ident_t *loc_ref, kmp_int32 gtid, kmp_task_t * new_task)
 
 #if OMPT_SUPPORT
     // PVL: Added time calculation
-    // TODO: Move this callback after allocation
+    // TODO: Move this callback after queuing
     //      (but before potentially serialized execution)
     kmp_taskdata_t *parent;
     if (ompt_enabled) {
