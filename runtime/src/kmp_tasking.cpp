@@ -832,6 +832,19 @@ __kmpc_omp_task_complete( ident_t *loc_ref, kmp_int32 gtid, kmp_task_t *task )
 
 
 #if OMPT_SUPPORT
+
+// PVL: Added this to note down time before task allocation
+static inline void
+__kmp_set_task_creation_start_ompt( kmp_info_t *thread )
+{
+    if (ompt_enabled) {
+        if (ompt_callbacks.ompt_callback(ompt_callback_task_create) &&
+            ompt_callbacks.ompt_callback(ext_tool_time)) {
+            thread->th.ompt_thread_info.last_tool_time = ompt_callbacks.ompt_callback(ext_tool_time)();
+        }
+    }
+}
+
 //----------------------------------------------------------------------------------------------------
 // __kmp_task_init_ompt:
 //   Initialize OMPT fields maintained by a task. This will only be called after
@@ -994,13 +1007,7 @@ __kmp_task_alloc( ident_t *loc_ref, kmp_int32 gtid, kmp_tasking_flags_t *flags,
     size_t shareds_offset;
 
     // PVL: Get current time from tool or runtime method, set in ompt_thread_info struct
-#if OMPT_SUPPORT
-    if (   ompt_enabled
-        && ompt_callbacks.ompt_callback(ompt_callback_task_create)
-        && ompt_callbacks.ompt_callback(ext_tool_time)) {
-        thread->th.ompt_thread_info.last_tool_time = ompt_callbacks.ompt_callback(ext_tool_time)();
-    }
-#endif
+    __kmp_set_task_creation_start_ompt( kmp_info_t *thread );
 
     KA_TRACE(10, ("__kmp_task_alloc(enter): T#%d loc=%p, flags=(0x%x) "
                   "sizeof_task=%ld sizeof_shared=%ld entry=%p\n",
