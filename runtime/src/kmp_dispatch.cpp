@@ -334,6 +334,21 @@ static kmp_uint32 __kmp_le( UT value, UT checker) {
     return value <= checker;
 }
 
+#if OMPT_SUPPORT
+
+// PVL: Added this to note down time before task allocation
+#if OMPT_SUPPORT && OMPT_OPTIONAL
+static inline void
+__kmp_set_chunk_creation_start_ompt( kmp_info_t *thread )
+{
+    if (ompt_enabled) {
+        if (ompt_callbacks.ompt_callback(ompt_callback_chunk) &&
+            ompt_callbacks.ompt_callback(ext_tool_time)) {
+            thread->th.ompt_thread_info.last_tool_time = ompt_callbacks.ompt_callback(ext_tool_time)();
+        }
+    }
+}
+#endif
 
 /* ------------------------------------------------------------------------ */
 /* ------------------------------------------------------------------------ */
@@ -1422,16 +1437,6 @@ static int
 __kmp_dispatch_next(
     ident_t *loc, int gtid, kmp_int32 *p_last, T *p_lb, T *p_ub, typename traits_t< T >::signed_t *p_st
 ) {
-    // PVL: Note chunk creation start time
-#if OMPT_SUPPORT && OMPT_OPTIONAL
-    kmp_info_t *thread = __kmp_threads[ gtid ];
-    if (ompt_enabled
-        && ompt_callbacks.ompt_callback(ext_callback_chunk)
-        && ompt_callbacks.ompt_callback(ext_tool_time)) {
-        thread->th.ompt_thread_info.last_tool_time =
-            ompt_callbacks.ompt_callback(ext_tool_time)();
-    }
-#endif
 
     typedef typename traits_t< T >::unsigned_t  UT;
     typedef typename traits_t< T >::signed_t    ST;
@@ -1446,6 +1451,11 @@ __kmp_dispatch_next(
     dispatch_private_info_template< T > * pr;
     kmp_info_t                          * th   = __kmp_threads[ gtid ];
     kmp_team_t                          * team = th -> th.th_team;
+
+    // PVL: Note chunk creation start time
+#if OMPT_SUPPORT && OMPT_OPTIONAL
+    __kmp_set_chunk_creation_start_ompt(th);
+#endif
 
     KMP_DEBUG_ASSERT( p_lb && p_ub && p_st ); // AC: these cannot be NULL
     #ifdef KMP_DEBUG
