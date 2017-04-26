@@ -342,7 +342,7 @@ static inline void
 __kmp_set_chunk_creation_start_ompt( kmp_info_t *thread )
 {
     if (ompt_enabled) {
-        if (ompt_callbacks.ompt_callback(ompt_callback_chunk) &&
+        if (ompt_callbacks.ompt_callback(ext_callback_chunk) &&
             ompt_callbacks.ompt_callback(ext_tool_time)) {
             thread->th.ompt_thread_info.last_tool_time = ompt_callbacks.ompt_callback(ext_tool_time)();
         }
