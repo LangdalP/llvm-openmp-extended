@@ -1007,7 +1007,7 @@ __kmp_task_alloc( ident_t *loc_ref, kmp_int32 gtid, kmp_tasking_flags_t *flags,
     size_t shareds_offset;
 
     // PVL: Get current time from tool or runtime method, set in ompt_thread_info struct
-    __kmp_set_task_creation_start_ompt( kmp_info_t *thread );
+    __kmp_set_task_creation_start_ompt( thread );
 
     KA_TRACE(10, ("__kmp_task_alloc(enter): T#%d loc=%p, flags=(0x%x) "
                   "sizeof_task=%ld sizeof_shared=%ld entry=%p\n",
