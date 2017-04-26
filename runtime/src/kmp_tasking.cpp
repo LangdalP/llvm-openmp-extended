@@ -993,6 +993,15 @@ __kmp_task_alloc( ident_t *loc_ref, kmp_int32 gtid, kmp_tasking_flags_t *flags,
     kmp_taskdata_t *parent_task = thread->th.th_current_task;
     size_t shareds_offset;
 
+    // PVL: Get current time from tool or runtime method, set in ompt_thread_info struct
+#if OMPT_SUPPORT
+    if (   ompt_enabled
+        && ompt_callbacks.ompt_callback(ompt_callback_task_create)
+        && ompt_callbacks.ompt_callback(ext_tool_time)) {
+        thread->th.ompt_thread_info.last_tool_time = ompt_callbacks.ompt_callback(ext_tool_time)();
+    }
+#endif
+
     KA_TRACE(10, ("__kmp_task_alloc(enter): T#%d loc=%p, flags=(0x%x) "
                   "sizeof_task=%ld sizeof_shared=%ld entry=%p\n",
                   gtid, loc_ref, *((kmp_int32 *)flags), sizeof_kmp_task_t,
@@ -1189,15 +1198,6 @@ __kmpc_omp_task_alloc( ident_t *loc_ref, kmp_int32 gtid, kmp_int32 flags,
                   sizeof_kmp_task_t, sizeof_shareds, task_entry) );
 #endif
 
-    // PVL: Get current time from tool or runtime method, set in ompt_thread_info struct
-#if OMPT_SUPPORT
-    kmp_info_t *thread = __kmp_threads[ gtid ];
-    if (   ompt_enabled
-        && ompt_callbacks.ompt_callback(ompt_callback_task_create)
-        && ompt_callbacks.ompt_callback(ext_tool_time)) {
-        thread->th.ompt_thread_info.last_tool_time = ompt_callbacks.ompt_callback(ext_tool_time)();
-    }
-#endif
 
     // PVL: Taskdata and task structures do not exist before this point
 
