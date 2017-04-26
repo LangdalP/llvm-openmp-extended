@@ -334,8 +334,6 @@ static kmp_uint32 __kmp_le( UT value, UT checker) {
     return value <= checker;
 }
 
-#if OMPT_SUPPORT
-
 // PVL: Added this to note down time before task allocation
 #if OMPT_SUPPORT && OMPT_OPTIONAL
 static inline void
@@ -1586,7 +1584,7 @@ __kmp_dispatch_next(
             double create_duration = 0;
             if (ompt_callbacks.ompt_callback(ext_tool_time)) {
                 const double start =
-                    thread->th.ompt_thread_info.last_tool_time;
+                    th->th.ompt_thread_info.last_tool_time;
                 create_duration = ompt_callbacks.ompt_callback(ext_tool_time)() - start;
             }
             ompt_callbacks.ompt_callback(ext_callback_chunk)(
@@ -2325,7 +2323,7 @@ __kmp_dispatch_next(
         double create_duration = 0;
         if (ompt_callbacks.ompt_callback(ext_tool_time)) {
             const double start =
-                thread->th.ompt_thread_info.last_tool_time;
+                th->th.ompt_thread_info.last_tool_time;
             create_duration = ompt_callbacks.ompt_callback(ext_tool_time)() - start;
         }
         ompt_callbacks.ompt_callback(ext_callback_chunk)(
