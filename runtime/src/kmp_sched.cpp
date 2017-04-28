@@ -218,16 +218,18 @@ __kmp_for_static_init(
         #endif
         KE_TRACE( 10, ("__kmpc_for_static_init: T#%d return\n", global_tid ) );
 
-//TODO for intel: (see first ompt callback in this function)
+        // TODO for intel: (see first ompt callback in this function)
+        // PVL: Replaced ompt_callback_work with ext_callback_loop
 #if OMPT_SUPPORT && OMPT_OPTIONAL
         if (ompt_enabled &&
-            ompt_callbacks.ompt_callback(ompt_callback_work)) {
-            ompt_callbacks.ompt_callback(ompt_callback_work)(
-                ompt_work_loop,
+            ompt_callbacks.ompt_callback(ext_callback_loop)) {
+            ompt_callbacks.ompt_callback(ext_callback_loop)(
+                ext_loop_sched_static,
                 ompt_scope_begin,
                 &(team_info->parallel_data),
                 &(task_info->task_data),
-                *pstride,  //TODO: OMPT: verify loop count value (OpenMP-spec 4.6.2.18)
+                traits_t< T >::is_signed,
+                incr,
                 team_info->microtask);
         }
 #endif
