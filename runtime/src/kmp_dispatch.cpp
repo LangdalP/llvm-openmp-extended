@@ -346,6 +346,14 @@ __kmp_set_chunk_creation_start_ompt( kmp_info_t *thread )
         }
     }
 }
+
+// PVL: This function should perhaps be improved, and possibly moved to kmp.h
+static inline ext_loop_sched_t
+__kmp_map_kmp_sched_to_ompt_sched(enum sched_type kmp_sched)
+{
+    // We assume kmp_sched has had modifiers removed.
+    return (kmp_sched == kmp_sch_dynamic_chunked ) ? ext_loop_sched_dynamic : ext_loop_sched_guided;
+}
 #endif
 
 /* ------------------------------------------------------------------------ */
@@ -1245,7 +1253,7 @@ __kmp_dispatch_init(
         ompt_team_info_t *team_info = __ompt_get_teaminfo(0, NULL);
         ompt_task_info_t *task_info = __ompt_get_task_info_object(0);
         ompt_callbacks.ompt_callback(ext_callback_loop)(
-            ext_loop_sched_dynamic,
+            __kmp_map_kmp_sched_to_ompt_sched(schedule),
             ompt_scope_begin,
             &(team_info->parallel_data),
             &(task_info->task_data),
@@ -1416,7 +1424,7 @@ __kmp_dispatch_finish_chunk( int gtid, ident_t *loc )
             ompt_team_info_t *team_info = __ompt_get_teaminfo(0, NULL);         \
             ompt_task_info_t *task_info = __ompt_get_task_info_object(0);       \
             ompt_callbacks.ompt_callback(ext_callback_loop)(                    \
-                ext_loop_sched_dynamic,                                         \
+                __kmp_map_kmp_sched_to_ompt_sched(pr->schedule),                \
                 ompt_scope_end,                                                 \
                 &(team_info->parallel_data),                                    \
                 &(task_info->task_data),                                        \
