@@ -463,7 +463,7 @@ typedef enum ext_loop_sched_e {
 } ext_loop_sched_t;
 
 typedef void (*ext_callback_loop_t) (
-    ext_loop_sched_t loop_sched,
+    ext_loop_sched_t loop_sched,    // ext_loop_sched_t is equivalent to omp_sched_t for tools
     ompt_scope_endpoint_t endpoint,
     ompt_data_t * parallel_data,    // The parallel region
     ompt_data_t * task_data,        // The implicit task of the worker
