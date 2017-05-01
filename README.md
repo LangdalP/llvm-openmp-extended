@@ -36,13 +36,6 @@ typedef void (*ompt_callback_task_create_t) (
     double event_duration,  // New parameter
     const void *codeptr_ra
 );
-
-typedef enum ompt_loop_sched_e {
-    ext_loop_sched_static   = 1,
-    ext_loop_sched_dynamic  = 2,
-    ext_loop_sched_guided   = 3
-} ompt_loop_sched_t;
-
 // Invoked per chunk
 typedef void (*ompt_callback_chunk_t) (
     ompt_data_t *task_data,     // The impl. task of the worker
@@ -54,7 +47,7 @@ typedef void (*ompt_callback_chunk_t) (
 
 // Replaces the old ompt_callback_work
 typedef void (*ompt_callback_loop_t) (
-    ext_loop_sched_t loop_sched,    // Schedule type at runtime
+    omp_sched_t loop_sched,         // Schedule type at runtime
     ompt_scope_endpoint_t endpoint, // Begin or end?
     ompt_data_t *parallel_data,     // The parallel region
     ompt_data_t *task_data,         // The implicit task of the worker
