@@ -1007,7 +1007,7 @@ __kmp_task_alloc( ident_t *loc_ref, kmp_int32 gtid, kmp_tasking_flags_t *flags,
     size_t shareds_offset;
 
 #if OMPT_SUPPORT
-    // PVL: Get current time from tool or runtime method, set in ompt_thread_info struct
+    // PVL: Get current time from tool if registered, set in ompt_thread_info struct
     __kmp_set_task_creation_start_ompt( thread );
 #endif
 
@@ -1516,6 +1516,7 @@ __kmpc_omp_task( ident_t *loc_ref, kmp_int32 gtid, kmp_task_t * new_task)
     // PVL: Added time calculation
     // TODO: Move this callback after queuing
     //      (but before potentially serialized execution)
+    //      for a more precise task creation duration.
     kmp_taskdata_t *parent;
     if (ompt_enabled) {
         parent = new_taskdata->td_parent;
