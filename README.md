@@ -1,10 +1,10 @@
 # LLVM OpenMP - Extended for Grain Graphs
 
 Forked from: 
-https://github.com/OpenMPToolsInterface/LLVM-openmp/tree/towards_tr4 at commit da2562e.
+- https://github.com/OpenMPToolsInterface/LLVM-openmp/tree/towards_tr4 at commit da2562e.
 
 Intended to be used together with the following modified version of Clang:
-https://github.com/LangdalP/clang/tree/pedervl/static-chunks-conditional
+- https://github.com/LangdalP/clang/tree/pedervl/static-chunks-conditional
 
 This version of the LLVM OpenMP runtime has the following OMPT extensions:
 
