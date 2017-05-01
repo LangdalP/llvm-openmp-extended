@@ -1,15 +1,24 @@
 # LLVM OpenMP - Extended for Grain Graphs
 
-Forked from: https://github.com/OpenMPToolsInterface/LLVM-openmp/tree/towards_tr4
+Forked from: https://github.com/OpenMPToolsInterface/LLVM-openmp/tree/towards_tr4 at commit da2562e.
 
 This version of the LLVM OpenMP runtime has the following OMPT extensions:
 
 - The ability to obtain the duration of task creation
-- The ability to obtain information about loop iteration ranges and chunks
+- The ability to obtain information about loop scheduling type and chunk execution (including iteration ranges).
 
-The exact approach can still change, but at the time of writing, it is as follows:
+To quickly find out where we have made modifications, you can search for the term "PVL" in the code. This term is placed as a part of a comment in (hopefully) all locations where we have made modifications. Example:
+```c
+#if OMPT_SUPPORT
+    // PVL: Get current time from tool if registered, set in ompt_thread_info struct
+    __kmp_set_task_creation_start_ompt( thread );
+#endif
+```
 
-### Summary
+### Alpha Release Disclaimer
+While we have not found any serious bugs resulting from our extensions, we cannot guarantee that they are ready to merge into the LLVM code base. The extensions are mostly simple, but lack proper test coverage. Also, note the "Known Bugs" list further down.
+
+### Summary of new or changed callbacks
 
 **Note: Support for the chunk callback for statically scheduled loops requires that programs are compiled with the following Clang fork:** https://github.com/LangdalP/clang/tree/pedervl/static-chunks-conditional
 ```c
@@ -55,7 +64,7 @@ typedef void (*ompt_callback_loop_t) (
 );
 ```
 
-# Some known bugs
+# Some known bugs:
 
 - For static loops, step is always reported as 1. This is due to Clang's code generation, and requires a fix in Clang.
 - For dynamic loops, an extra chunk with range [0, 0] is reported to the tool on each worker
