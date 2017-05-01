@@ -15,6 +15,8 @@ To quickly find out where we have made modifications, you can search for the ter
 #endif
 ```
 
+Note that we use the "ext" prefix for our proposed callbacks instead of ompt, to clearly show they are not a part of the original runtime. In other words, the three new callbacks are named `ext_tool_time` , `ext_callback_loop_t` and `ext_callback_chunk_t`.
+
 ### Alpha Release Disclaimer
 While we have not found any serious bugs resulting from our extensions, we cannot guarantee that they are ready to merge into the LLVM code base. The extensions are mostly simple, but lack proper test coverage. Also, note the "Known Bugs" list further down.
 
@@ -24,7 +26,7 @@ While we have not found any serious bugs resulting from our extensions, we canno
 ```c
 // If the tool registers ext_tool_time callback, it is used by the runtime to calculate durations.
 // If it is not registered, durations are reported as 0 instead.
-typedef double (*ext_tool_time_t) (void);
+typedef double (*ompt_tool_time_t) (void);
 
 // New ompt_callback_task_create
 typedef void (*ompt_callback_task_create_t) (
