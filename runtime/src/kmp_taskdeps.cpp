@@ -450,19 +450,12 @@ __kmpc_omp_task_with_deps( ident_t *loc_ref, kmp_int32 gtid, kmp_task_t * new_ta
         if (ompt_callbacks.ompt_callback(ompt_callback_task_create)) {
             kmp_taskdata_t *parent = new_taskdata->td_parent;
             ompt_task_data_t task_data = ompt_task_id_none;
-            double create_duration = 0;
-            if (ompt_callbacks.ompt_callback(ext_tool_time)) {
-                const double start =
-                    __kmp_threads[ gtid ]->th.ompt_thread_info.last_tool_time;
-                create_duration = ompt_callbacks.ompt_callback(ext_tool_time)() - start;
-            }
             ompt_callbacks.ompt_callback(ompt_callback_task_create)(
                 parent ? &(parent->ompt_task_info.task_data) : &task_data,
                 parent ? &(parent->ompt_task_info.frame) : NULL,
                 &(new_taskdata->ompt_task_info.task_data),
                 ompt_task_explicit,
                 1,
-                create_duration,
                 new_taskdata->ompt_task_info.function);
         }
 

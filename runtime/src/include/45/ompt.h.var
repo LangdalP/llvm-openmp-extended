@@ -134,7 +134,8 @@
     macro (ext_callback_loop,                   ext_callback_loop_t,            81)                             \
     macro (ext_callback_chunk,                  ext_callback_chunk_t,           82)                             \
     macro (ext_tool_time,                       ext_tool_time_t,                83)                             \
-    macro (ext_callback_chunk_create_begin,     ext_callback_chunk_create_begin_t, 84)                           \
+    macro (ext_callback_chunk_create_begin,     ext_callback_chunk_create_begin_t, 84)                          \
+    macro (ext_callback_task_create_begin,      ext_callback_task_create_begin_t, 85)                           \
 
 
 
@@ -351,15 +352,22 @@ typedef void (*ompt_callback_task_schedule_t) (
     ompt_task_data_t *second_task_data
 );
 
-// PVL - added duration parameter
+// PVL - added and removed duration parameter
 typedef void (*ompt_callback_task_create_t) (
     ompt_data_t *parent_task_data,    /* data of parent task         */
-    const ompt_frame_t *parent_frame,       /* frame data for parent task   */
+    const ompt_frame_t *parent_frame, /* frame data for parent task   */
     ompt_data_t *new_task_data,       /* data of created task         */
     ompt_task_type_t type,
     int has_dependences,
-    double event_duration,
     const void *codeptr_ra
+);
+
+// PVL - added this callback for experiment
+typedef void (*ext_callback_task_create_begin_t) (
+    ompt_data_t *parent_task_data,    /* data of parent task         */
+    const ompt_frame_t *parent_frame, /* frame data for parent task   */
+    ompt_data_t *new_task_data,       /* data of created task         */
+    ompt_task_type_t type
 );
 
 /* task dependences */
