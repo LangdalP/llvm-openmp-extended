@@ -501,19 +501,12 @@ __kmpc_omp_task_begin_if0( ident_t *loc_ref, kmp_int32 gtid, kmp_task_t * task )
         if (ompt_callbacks.ompt_callback(ompt_callback_task_create)) {
             kmp_taskdata_t *parent = taskdata->td_parent;
             ompt_task_data_t task_data = ompt_task_id_none;
-            double create_duration = 0;
-            if (ompt_callbacks.ompt_callback(ext_tool_time)) {
-                const double start =
-                    __kmp_threads[ gtid ]->th.ompt_thread_info.last_tool_time;
-                create_duration = ompt_callbacks.ompt_callback(ext_tool_time)() - start;
-            }
             ompt_callbacks.ompt_callback(ompt_callback_task_create)(
                 parent ? &(parent->ompt_task_info.task_data) : &task_data,
                 parent ? &(parent->ompt_task_info.frame) : NULL,
                 &(taskdata->ompt_task_info.task_data),
                 ompt_task_explicit,
                 0,
-                create_duration,
                 taskdata->ompt_task_info.function);
         }
 
@@ -833,17 +826,7 @@ __kmpc_omp_task_complete( ident_t *loc_ref, kmp_int32 gtid, kmp_task_t *task )
 
 #if OMPT_SUPPORT
 
-// PVL: Added this to note down time before task allocation
-static inline void
-__kmp_set_task_creation_start_ompt( kmp_info_t *thread )
-{
-    if (ompt_enabled) {
-        if (ompt_callbacks.ompt_callback(ompt_callback_task_create) &&
-            ompt_callbacks.ompt_callback(ext_tool_time)) {
-            thread->th.ompt_thread_info.last_tool_time = ompt_callbacks.ompt_callback(ext_tool_time)();
-        }
-    }
-}
+// PVL: Inline method for noting start-time used to be here
 
 //----------------------------------------------------------------------------------------------------
 // __kmp_task_init_ompt:
@@ -851,10 +834,25 @@ __kmp_set_task_creation_start_ompt( kmp_info_t *thread )
 //   ompt_tool, so we already know whether ompt is enabled or not.
 
 static inline void
-__kmp_task_init_ompt( kmp_taskdata_t * task, int tid, void * function )
+__kmp_task_init_ompt( kmp_taskdata_t * task, int tid, void * function)
 {
     if (ompt_enabled) {
         task->ompt_task_info.task_data.value = __ompt_task_id_new(tid);
+        task->ompt_task_info.function = function;
+        task->ompt_task_info.frame.exit_runtime_frame = NULL;
+        task->ompt_task_info.frame.reenter_runtime_frame = NULL;
+#if OMP_40_ENABLED
+        task->ompt_task_info.ndeps = 0;
+        task->ompt_task_info.deps = NULL;
+#endif /* OMP_40_ENABLED */
+    }
+}
+
+static inline void
+__kmp_task_init_ompt( kmp_taskdata_t * task, int tid, void * function, ompt_task_data_t task_data)
+{
+    if (ompt_enabled) {
+        task->ompt_task_info.task_data.value = task_data.value;
         task->ompt_task_info.function = function;
         task->ompt_task_info.frame.exit_runtime_frame = NULL;
         task->ompt_task_info.frame.reenter_runtime_frame = NULL;
@@ -1006,9 +1004,21 @@ __kmp_task_alloc( ident_t *loc_ref, kmp_int32 gtid, kmp_tasking_flags_t *flags,
     kmp_taskdata_t *parent_task = thread->th.th_current_task;
     size_t shareds_offset;
 
-#if OMPT_SUPPORT
-    // PVL: Get current time from tool if registered, set in ompt_thread_info struct
-    __kmp_set_task_creation_start_ompt( thread );
+// I here assume that ompt_callback_task_create_begin would be optional
+#if OMPT_SUPPORT && OMPT_OPTIONAL
+    // PVL: Used to note down time here, now call callback instead
+    // Save ompt_task_data for later
+    ompt_task_data_t ompt_task_data = ompt_task_id_none;
+    if (ompt_enabled) {
+        kmp_taskdata_t *parent;
+        if (ompt_callbacks.ompt_callback(ext_callback_task_create_begin)) {
+            ompt_callbacks.ompt_callback(ext_callback_task_create_begin)(
+                parent ? &(parent->ompt_task_info.task_data) : &ompt_task_data,
+                parent ? &(parent->ompt_task_info.frame) : NULL,
+                &ompt_task_data,
+                ompt_task_explicit);
+        }
+    }
 #endif
 
     KA_TRACE(10, ("__kmp_task_alloc(enter): T#%d loc=%p, flags=(0x%x) "
@@ -1176,7 +1186,9 @@ __kmp_task_alloc( ident_t *loc_ref, kmp_int32 gtid, kmp_tasking_flags_t *flags,
     ANNOTATE_HAPPENS_BEFORE(task);
 
 #if OMPT_SUPPORT
-    __kmp_task_init_ompt(taskdata, gtid, (void*) task_entry);
+    // PVL: This function now also sets potentially user-altered task_data value
+    __kmp_task_init_ompt(taskdata, gtid, (void*) task_entry, ompt_task_data);
+
 #endif
 
     return task;
@@ -1401,19 +1413,12 @@ __kmpc_omp_task_parts( ident_t *loc_ref, kmp_int32 gtid, kmp_task_t * new_task)
             OMPT_GET_FRAME_ADDRESS(1);
         if (ompt_callbacks.ompt_callback(ompt_callback_task_create)) {
             ompt_task_data_t task_data = ompt_task_id_none;
-            double create_duration = 0;
-            if (ompt_callbacks.ompt_callback(ext_tool_time)) {
-                const double start =
-                    __kmp_threads[ gtid ]->th.ompt_thread_info.last_tool_time;
-                create_duration = ompt_callbacks.ompt_callback(ext_tool_time)() - start;
-            }
             ompt_callbacks.ompt_callback(ompt_callback_task_create)(
                 parent ? &(parent->ompt_task_info.task_data) : &task_data,
                 parent ? &(parent->ompt_task_info.frame) : NULL,
                 &(new_taskdata->ompt_task_info.task_data),
                 ompt_task_explicit,
                 0,
-                create_duration,
                 new_taskdata->ompt_task_info.function);
         }
     }
@@ -1524,19 +1529,12 @@ __kmpc_omp_task( ident_t *loc_ref, kmp_int32 gtid, kmp_task_t * new_task)
             OMPT_GET_FRAME_ADDRESS(1);
         if (ompt_callbacks.ompt_callback(ompt_callback_task_create)) {
             ompt_task_data_t task_data = ompt_task_id_none;
-            double create_duration = 0;
-            if (ompt_callbacks.ompt_callback(ext_tool_time)) {
-                const double start =
-                    __kmp_threads[ gtid ]->th.ompt_thread_info.last_tool_time;
-                create_duration = ompt_callbacks.ompt_callback(ext_tool_time)() - start;
-            }
             ompt_callbacks.ompt_callback(ompt_callback_task_create)(
                 parent ? &(parent->ompt_task_info.task_data) : &task_data,
                 parent ? &(parent->ompt_task_info.frame) : NULL,
                 &(new_taskdata->ompt_task_info.task_data),
                 ompt_task_explicit,
                 0,
-                create_duration,
                 new_taskdata->ompt_task_info.function);
         }
     }

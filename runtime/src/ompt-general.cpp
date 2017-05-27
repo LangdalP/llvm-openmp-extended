@@ -263,13 +263,20 @@ void ompt_post_init()
         }
         ompt_data_t* task_data;
         __ompt_get_task_info_internal(0, NULL, &task_data, NULL, NULL, NULL);
+        // PVL
+        if (ompt_callbacks.ompt_callback(ext_callback_task_create_begin)) {
+            ompt_callbacks.ompt_callback(ext_callback_task_create_begin)(
+                NULL,
+                NULL,
+                task_data,
+                ompt_task_initial);
+        }
         if (ompt_callbacks.ompt_callback(ompt_callback_task_create)) {
             ompt_callbacks.ompt_callback(ompt_callback_task_create)(
                 NULL,
                 NULL,
                 task_data,
                 ompt_task_initial,
-                0,
                 0,
                 OMPT_GET_RETURN_ADDRESS(0));
         }
