@@ -1010,11 +1010,10 @@ __kmp_task_alloc( ident_t *loc_ref, kmp_int32 gtid, kmp_tasking_flags_t *flags,
     // Save ompt_task_data for later
     ompt_task_data_t ompt_task_data = ompt_task_id_none;
     if (ompt_enabled) {
-        kmp_taskdata_t *parent;
         if (ompt_callbacks.ompt_callback(ext_callback_task_create_begin)) {
             ompt_callbacks.ompt_callback(ext_callback_task_create_begin)(
-                parent ? &(parent->ompt_task_info.task_data) : &ompt_task_data,
-                parent ? &(parent->ompt_task_info.frame) : NULL,
+                parent_task ? &(parent_task->ompt_task_info.task_data) : &ompt_task_data,
+                parent_task ? &(parent_task->ompt_task_info.frame) : NULL,
                 &ompt_task_data,
                 ompt_task_explicit);
         }
