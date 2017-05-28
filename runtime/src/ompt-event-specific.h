@@ -86,6 +86,7 @@
 
 #define ext_callback_loop_implemented                   ompt_event_MAY_ALWAYS_OPTIONAL
 #define ext_callback_chunk_implemented                  ompt_event_MAY_ALWAYS_OPTIONAL
+#define ext_callback_chunk_create_begin_implemented     ompt_event_MAY_ALWAYS_OPTIONAL
 #define ext_tool_time_implemented                       ompt_event_MAY_ALWAYS_OPTIONAL
 
 #if OMP_40_ENABLED

@@ -134,6 +134,7 @@
     macro (ext_callback_loop,                   ext_callback_loop_t,            81)                             \
     macro (ext_callback_chunk,                  ext_callback_chunk_t,           82)                             \
     macro (ext_tool_time,                       ext_tool_time_t,                83)                             \
+    macro (ext_callback_chunk_create_begin,     ext_callback_chunk_create_begin_t, 84)                           \
 
 
 
@@ -476,8 +477,11 @@ typedef void (*ext_callback_chunk_t) (
     ompt_data_t *task_data,
     int64_t lower,
     int64_t upper,
-    double create_duration,
     int last_chunk // Is scheduled chunk last for thread?
+);
+
+typedef void (*ext_callback_chunk_create_begin_t) (
+    ompt_data_t *task_data
 );
 
 typedef double (*ext_tool_time_t) (void);

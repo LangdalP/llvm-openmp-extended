@@ -334,19 +334,7 @@ static kmp_uint32 __kmp_le( UT value, UT checker) {
     return value <= checker;
 }
 
-// PVL: Added this to note down time before task allocation
 #if OMPT_SUPPORT && OMPT_OPTIONAL
-static inline void
-__kmp_set_chunk_creation_start_ompt( kmp_info_t *thread )
-{
-    if (ompt_enabled) {
-        if (ompt_callbacks.ompt_callback(ext_callback_chunk) &&
-            ompt_callbacks.ompt_callback(ext_tool_time)) {
-            thread->th.ompt_thread_info.last_tool_time = ompt_callbacks.ompt_callback(ext_tool_time)();
-        }
-    }
-}
-
 // PVL: This function should perhaps be improved, and possibly moved to kmp.h
 static inline ext_loop_sched_t
 __kmp_map_kmp_sched_to_ompt_sched(enum sched_type kmp_sched)
@@ -1458,9 +1446,14 @@ __kmp_dispatch_next(
     kmp_info_t                          * th   = __kmp_threads[ gtid ];
     kmp_team_t                          * team = th -> th.th_team;
 
-    // PVL: Note chunk creation start time
+    // PVL: Call chunk create begin
 #if OMPT_SUPPORT && OMPT_OPTIONAL
-    __kmp_set_chunk_creation_start_ompt(th);
+    if (ompt_enabled &&
+        ompt_callbacks.ompt_callback(ext_callback_chunk_create_begin)) {
+            ompt_task_info_t *task_info = __ompt_get_task_info_object(0);
+            ompt_callbacks.ompt_callback(ext_callback_chunk_create_begin)(
+                &(task_info->task_data));
+    }
 #endif
 
     KMP_DEBUG_ASSERT( p_lb && p_ub && p_st ); // AC: these cannot be NULL
@@ -1599,7 +1592,6 @@ __kmp_dispatch_next(
                 &(task_info->task_data),
                 (int64_t)*p_lb, // chunk lb
                 (int64_t)*p_ub, // chunk ub
-                create_duration,
                 !status);       // last chunk?
         }
 #endif
@@ -2338,7 +2330,6 @@ __kmp_dispatch_next(
             &(task_info->task_data),
             (int64_t)*p_lb, // chunk lb
             (int64_t)*p_ub, // chunk ub
-            create_duration,
             !status);       // last chunk?
     }
 #endif

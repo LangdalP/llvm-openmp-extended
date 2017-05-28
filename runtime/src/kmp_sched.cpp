@@ -771,6 +771,16 @@ __kmp_for_static_chunk(
     T                                 lower,
     T                                 upper
 ) {
+    // PVL: Chunk creation experiment
+#if OMPT_SUPPORT && OMPT_OPTIONAL
+    if (ompt_enabled &&
+        ompt_callbacks.ompt_callback(ext_callback_chunk_create_begin)) {
+        ompt_task_info_t *task_info = __ompt_get_task_info_object(0);
+        ompt_callbacks.ompt_callback(ext_callback_chunk_create_begin)(
+                &(task_info->task_data));
+    }
+#endif
+    // Cannot really measure the overhead tied to static chunks...
     // PVL: Added chunk scheduling callback invocation
 #if OMPT_SUPPORT && OMPT_OPTIONAL
     if (ompt_enabled &&
@@ -780,7 +790,6 @@ __kmp_for_static_chunk(
                 &(task_info->task_data),
                 (int64_t)lower,  // chunk lb
                 (int64_t)upper,  // chunk ub
-                0,               // cannot find create_duration for static chunks
                 last); // last chunk?
     }
 #endif
