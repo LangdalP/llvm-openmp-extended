@@ -1448,9 +1448,10 @@ __kmp_dispatch_next(
 
     // PVL: Call chunk create begin
 #if OMPT_SUPPORT && OMPT_OPTIONAL
+    ompt_task_info_t *task_info;
     if (ompt_enabled &&
         ompt_callbacks.ompt_callback(ext_callback_chunk_create_begin)) {
-            ompt_task_info_t *task_info = __ompt_get_task_info_object(0);
+            task_info = __ompt_get_task_info_object(0);
             ompt_callbacks.ompt_callback(ext_callback_chunk_create_begin)(
                 &(task_info->task_data));
     }
@@ -1581,13 +1582,8 @@ __kmp_dispatch_next(
 #if OMPT_SUPPORT && OMPT_OPTIONAL
         if (ompt_enabled &&
             ompt_callbacks.ompt_callback(ext_callback_chunk)) {
-            ompt_task_info_t *task_info = __ompt_get_task_info_object(0);
-            double create_duration = 0;
-            if (ompt_callbacks.ompt_callback(ext_tool_time)) {
-                const double start =
-                    th->th.ompt_thread_info.last_tool_time;
-                create_duration = ompt_callbacks.ompt_callback(ext_tool_time)() - start;
-            }
+            if (task_info == NULL)
+                task_info = __ompt_get_task_info_object(0);
             ompt_callbacks.ompt_callback(ext_callback_chunk)(
                 &(task_info->task_data),
                 (int64_t)*p_lb, // chunk lb
@@ -2319,13 +2315,8 @@ __kmp_dispatch_next(
 #if OMPT_SUPPORT && OMPT_OPTIONAL
     if (ompt_enabled &&
         ompt_callbacks.ompt_callback(ext_callback_chunk)) {
-        ompt_task_info_t *task_info = __ompt_get_task_info_object(0);
-        double create_duration = 0;
-        if (ompt_callbacks.ompt_callback(ext_tool_time)) {
-            const double start =
-                th->th.ompt_thread_info.last_tool_time;
-            create_duration = ompt_callbacks.ompt_callback(ext_tool_time)() - start;
-        }
+        if (task_info == NULL)
+            task_info = __ompt_get_task_info_object(0);
         ompt_callbacks.ompt_callback(ext_callback_chunk)(
             &(task_info->task_data),
             (int64_t)*p_lb, // chunk lb

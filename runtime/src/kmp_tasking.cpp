@@ -1004,15 +1004,14 @@ __kmp_task_alloc( ident_t *loc_ref, kmp_int32 gtid, kmp_tasking_flags_t *flags,
     kmp_taskdata_t *parent_task = thread->th.th_current_task;
     size_t shareds_offset;
 
-// I here assume that ompt_callback_task_create_begin would be optional
 #if OMPT_SUPPORT && OMPT_OPTIONAL
-    // PVL: Used to note down time here, now call callback instead
+    // PVL: Callback for task create begin
     // Save ompt_task_data for later
     ompt_task_data_t ompt_task_data = ompt_task_id_none;
     if (ompt_enabled) {
         if (ompt_callbacks.ompt_callback(ext_callback_task_create_begin)) {
             ompt_callbacks.ompt_callback(ext_callback_task_create_begin)(
-                parent_task ? &(parent_task->ompt_task_info.task_data) : &ompt_task_data,
+                parent_task ? &(parent_task->ompt_task_info.task_data) : NULL,
                 parent_task ? &(parent_task->ompt_task_info.frame) : NULL,
                 &ompt_task_data,
                 ompt_task_explicit);
