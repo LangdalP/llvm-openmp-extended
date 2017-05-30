@@ -1407,10 +1407,9 @@ __kmp_dispatch_finish_chunk( int gtid, ident_t *loc )
 #if OMPT_SUPPORT && OMPT_OPTIONAL
 #define OMPT_LOOP_END                                                           \
     if (status == 0) {                                                          \
-        if (ompt_enabled &&                                                     \
-            ompt_callbacks.ompt_callback(ext_callback_loop)) {                  \
+        if (ompt_callbacks.ompt_callback(ext_callback_loop)) {                  \
             ompt_team_info_t *team_info = __ompt_get_teaminfo(0, NULL);         \
-            ompt_task_info_t *task_info = __ompt_get_task_info_object(0);       \
+            task_info = __ompt_get_task_info_object(0);                         \
             ompt_callbacks.ompt_callback(ext_callback_loop)(                    \
                 __kmp_map_kmp_sched_to_ompt_sched(pr->schedule),                \
                 ompt_scope_end,                                                 \
@@ -1580,18 +1579,19 @@ __kmp_dispatch_next(
 #endif
         // PVL: Added chunk scheduling callback invocation
 #if OMPT_SUPPORT && OMPT_OPTIONAL
-        if (ompt_enabled &&
-            ompt_callbacks.ompt_callback(ext_callback_chunk)) {
-            if (task_info == NULL)
-                task_info = __ompt_get_task_info_object(0);
-            ompt_callbacks.ompt_callback(ext_callback_chunk)(
-                &(task_info->task_data),
-                (int64_t)*p_lb, // chunk lb
-                (int64_t)*p_ub, // chunk ub
-                !status);       // last chunk?
+        if (ompt_enabled) {
+            if (ompt_callbacks.ompt_callback(ext_callback_chunk)) {
+                if (task_info == NULL)
+                    task_info = __ompt_get_task_info_object(0);
+                ompt_callbacks.ompt_callback(ext_callback_chunk)(
+                    &(task_info->task_data),
+                    (int64_t)*p_lb, // chunk lb
+                    (int64_t)*p_ub, // chunk ub
+                    !status);       // last chunk?
+            }
+            OMPT_LOOP_END;
         }
 #endif
-        OMPT_LOOP_END;
         return status;
     } else {
         kmp_int32 last = 0;
@@ -2313,18 +2313,19 @@ __kmp_dispatch_next(
 #endif
     // PVL: Added chunk scheduling callback invocation
 #if OMPT_SUPPORT && OMPT_OPTIONAL
-    if (ompt_enabled &&
-        ompt_callbacks.ompt_callback(ext_callback_chunk)) {
-        if (task_info == NULL)
-            task_info = __ompt_get_task_info_object(0);
-        ompt_callbacks.ompt_callback(ext_callback_chunk)(
-            &(task_info->task_data),
-            (int64_t)*p_lb, // chunk lb
-            (int64_t)*p_ub, // chunk ub
-            !status);       // last chunk?
+    if (ompt_enabled) {
+        if (ompt_callbacks.ompt_callback(ext_callback_chunk)) {
+            if (task_info == NULL)
+                task_info = __ompt_get_task_info_object(0);
+            ompt_callbacks.ompt_callback(ext_callback_chunk)(
+                &(task_info->task_data),
+                (int64_t)*p_lb, // chunk lb
+                (int64_t)*p_ub, // chunk ub
+                !status);       // last chunk?
+        }
+        OMPT_LOOP_END;
     }
 #endif
-    OMPT_LOOP_END;
     return status;
 }
 
