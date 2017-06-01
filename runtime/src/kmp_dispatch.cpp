@@ -1448,14 +1448,12 @@ __kmp_dispatch_next(
     // PVL: Call chunk create begin
 #if OMPT_SUPPORT && OMPT_OPTIONAL
     ompt_task_info_t *task_info;
-    /*
     if (ompt_enabled &&
         ompt_callbacks.ompt_callback(ext_callback_chunk_create_begin)) {
             task_info = __ompt_get_task_info_object(0);
             ompt_callbacks.ompt_callback(ext_callback_chunk_create_begin)(
                 &(task_info->task_data));
     }
-    */
 #endif
 
     KMP_DEBUG_ASSERT( p_lb && p_ub && p_st ); // AC: these cannot be NULL
