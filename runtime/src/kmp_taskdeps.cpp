@@ -454,7 +454,7 @@ __kmpc_omp_task_with_deps( ident_t *loc_ref, kmp_int32 gtid, kmp_task_t * new_ta
             if (ompt_callbacks.ompt_callback(ext_tool_time)) {
                 const double start =
                     __kmp_threads[ gtid ]->th.ompt_thread_info.last_tool_time;
-                create_duration = ompt_callbacks.ompt_callback(ext_tool_time)() - start;
+                create_duration = 0 - start;
             }
             ompt_callbacks.ompt_callback(ompt_callback_task_create)(
                 parent ? &(parent->ompt_task_info.task_data) : &task_data,

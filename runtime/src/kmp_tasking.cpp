@@ -505,7 +505,7 @@ __kmpc_omp_task_begin_if0( ident_t *loc_ref, kmp_int32 gtid, kmp_task_t * task )
             if (ompt_callbacks.ompt_callback(ext_tool_time)) {
                 const double start =
                     __kmp_threads[ gtid ]->th.ompt_thread_info.last_tool_time;
-                create_duration = ompt_callbacks.ompt_callback(ext_tool_time)() - start;
+                create_duration = 0 - start;
             }
             ompt_callbacks.ompt_callback(ompt_callback_task_create)(
                 parent ? &(parent->ompt_task_info.task_data) : &task_data,
@@ -840,7 +840,7 @@ __kmp_set_task_creation_start_ompt( kmp_info_t *thread )
     if (ompt_enabled) {
         if (ompt_callbacks.ompt_callback(ompt_callback_task_create) &&
             ompt_callbacks.ompt_callback(ext_tool_time)) {
-            thread->th.ompt_thread_info.last_tool_time = ompt_callbacks.ompt_callback(ext_tool_time)();
+            thread->th.ompt_thread_info.last_tool_time = 0;
         }
     }
 }
@@ -1405,7 +1405,7 @@ __kmpc_omp_task_parts( ident_t *loc_ref, kmp_int32 gtid, kmp_task_t * new_task)
             if (ompt_callbacks.ompt_callback(ext_tool_time)) {
                 const double start =
                     __kmp_threads[ gtid ]->th.ompt_thread_info.last_tool_time;
-                create_duration = ompt_callbacks.ompt_callback(ext_tool_time)() - start;
+                create_duration = 0 - start;
             }
             ompt_callbacks.ompt_callback(ompt_callback_task_create)(
                 parent ? &(parent->ompt_task_info.task_data) : &task_data,
@@ -1528,7 +1528,7 @@ __kmpc_omp_task( ident_t *loc_ref, kmp_int32 gtid, kmp_task_t * new_task)
             if (ompt_callbacks.ompt_callback(ext_tool_time)) {
                 const double start =
                     __kmp_threads[ gtid ]->th.ompt_thread_info.last_tool_time;
-                create_duration = ompt_callbacks.ompt_callback(ext_tool_time)() - start;
+                create_duration = 0 - start;
             }
             ompt_callbacks.ompt_callback(ompt_callback_task_create)(
                 parent ? &(parent->ompt_task_info.task_data) : &task_data,

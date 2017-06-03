@@ -342,7 +342,7 @@ __kmp_set_chunk_creation_start_ompt( kmp_info_t *thread )
     if (ompt_enabled) {
         if (ompt_callbacks.ompt_callback(ext_callback_chunk) &&
             ompt_callbacks.ompt_callback(ext_tool_time)) {
-            thread->th.ompt_thread_info.last_tool_time = ompt_callbacks.ompt_callback(ext_tool_time)();
+            thread->th.ompt_thread_info.last_tool_time = 0;
         }
     }
 }
@@ -1593,7 +1593,7 @@ __kmp_dispatch_next(
             if (ompt_callbacks.ompt_callback(ext_tool_time)) {
                 const double start =
                     th->th.ompt_thread_info.last_tool_time;
-                create_duration = ompt_callbacks.ompt_callback(ext_tool_time)() - start;
+                create_duration = 0 - start;
             }
             ompt_callbacks.ompt_callback(ext_callback_chunk)(
                 &(task_info->task_data),
@@ -2332,7 +2332,7 @@ __kmp_dispatch_next(
         if (ompt_callbacks.ompt_callback(ext_tool_time)) {
             const double start =
                 th->th.ompt_thread_info.last_tool_time;
-            create_duration = ompt_callbacks.ompt_callback(ext_tool_time)() - start;
+            create_duration = 0 - start;
         }
         ompt_callbacks.ompt_callback(ext_callback_chunk)(
             &(task_info->task_data),
